@@ -1,9 +1,12 @@
 name: daily-signals
 
-# 每个美股交易日收盘后跑 (21:30 UTC ≈ 收盘后 1 小时左右; 可按需调)
+# 每个美股交易日开市后 30 分钟跑
+#   10:00 ET (开市 09:30 + 30min) = 14:00 UTC (夏令时 EDT) = 22:00 SGT
+#   注意: GitHub cron 是固定 UTC, 不随 DST 变。冬令时(EST, 11月初~3月)时
+#         14:00 UTC = 09:00 ET (开市前), 需把下面改成 "0 15 * * 1-5"。
 on:
   schedule:
-    - cron: "30 21 * * 1-5"
+    - cron: "0 14 * * 1-5"
   workflow_dispatch: {}        # 也可手动触发
 
 permissions:
