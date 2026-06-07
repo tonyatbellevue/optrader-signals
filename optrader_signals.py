@@ -69,6 +69,34 @@ DEFAULT_UNIVERSE = [
     # 其它成长 (3)
     "UBER", "ABNB", "SHOP",
 ]
+
+# 代码 -> 公司/基金名 (用于展示; 未收录的标的回退为代码本身)
+TICKER_NAMES = {
+    "SPY": "标普500 ETF", "QQQ": "纳指100 ETF", "IWM": "罗素2000 ETF",
+    "DIA": "道指 ETF", "GLD": "黄金 ETF", "SLV": "白银 ETF", "TLT": "20年美债 ETF",
+    "HYG": "高收益债 ETF", "XLF": "金融板块 ETF", "XLE": "能源板块 ETF",
+    "XLK": "科技板块 ETF", "SMH": "半导体 ETF", "ARKK": "ARK 创新 ETF",
+    "EEM": "新兴市场 ETF", "FXI": "中国大盘 ETF",
+    "NVDA": "英伟达", "AAPL": "苹果", "MSFT": "微软", "AMZN": "亚马逊",
+    "META": "Meta(脸书)", "GOOGL": "谷歌", "TSLA": "特斯拉", "AMD": "超微半导体",
+    "AVGO": "博通", "NFLX": "奈飞", "CRM": "Salesforce", "ORCL": "甲骨文",
+    "ADBE": "Adobe", "INTC": "英特尔", "QCOM": "高通", "MU": "美光科技",
+    "AMAT": "应用材料", "TXN": "德州仪器", "CSCO": "思科", "PLTR": "Palantir",
+    "SMCI": "超微电脑", "MRVL": "迈威尔科技", "ARM": "Arm 控股", "SNOW": "Snowflake",
+    "JPM": "摩根大通", "BAC": "美国银行", "GS": "高盛", "MS": "摩根士丹利",
+    "WFC": "富国银行", "C": "花旗集团", "V": "Visa", "MA": "万事达",
+    "AXP": "美国运通", "COIN": "Coinbase", "PYPL": "PayPal", "SOFI": "SoFi",
+    "DIS": "迪士尼", "NKE": "耐克", "SBUX": "星巴克", "MCD": "麦当劳",
+    "COST": "好市多", "WMT": "沃尔玛", "TGT": "塔吉特", "HD": "家得宝",
+    "LOW": "劳氏", "BA": "波音",
+    "UNH": "联合健康", "LLY": "礼来", "JNJ": "强生", "PFE": "辉瑞",
+    "MRNA": "Moderna", "ABBV": "艾伯维",
+    "XOM": "埃克森美孚", "CVX": "雪佛龙", "OXY": "西方石油", "CAT": "卡特彼勒",
+    "GE": "通用电气", "F": "福特汽车", "GM": "通用汽车",
+    "MSTR": "Strategy(MicroStrategy)", "RIOT": "Riot Platforms", "MARA": "MARA Holdings",
+    "UBER": "优步", "ABNB": "爱彼迎", "SHOP": "Shopify",
+}
+
 RISK_FREE = 0.045
 
 # ----------------------------- tastytrade 机械化口径 -----------------------------
@@ -255,7 +283,8 @@ def fetch_metrics(ticker, iv_hist, today):
     iv_rank = pct_rank(iv_series, atm_iv) if len(iv_series) >= 20 else None
 
     return dict(
-        ticker=ticker, spot=round(spot, 2), exp=best_exp, dte=best_dte,
+        ticker=ticker, name=TICKER_NAMES.get(ticker, ticker),
+        spot=round(spot, 2), exp=best_exp, dte=best_dte,
         atm_iv=round(atm_iv * 100, 1), hv30=round(hv30 * 100, 1),
         vrp=round(atm_iv / hv30, 2) if hv30 else None,
         iv_rank=iv_rank, hv_rank=hv_rank, exp_move=exp_move_pct,
@@ -274,7 +303,7 @@ def demo_metrics(ticker, iv_hist, today):
     trend = random.choice(["bullish", "bearish", "neutral", "neutral"])
     dte = random.choice([40, 43, 45, 49])
     return dict(
-        ticker=ticker, spot=spot,
+        ticker=ticker, name=TICKER_NAMES.get(ticker, ticker), spot=spot,
         exp=(datetime.now().date() + timedelta(days=dte)).isoformat(), dte=dte,
         atm_iv=atm_iv, hv30=hv30, vrp=vrp,
         iv_rank=round(random.uniform(5, 95), 1),
@@ -600,7 +629,7 @@ document.getElementById('picks').innerHTML = DATA.picks.map(p=>{
   return `<div class="card ${sell?'sell':'buy'}">
     <div class="score"><div class="n">${f(p.score)}</div><div class="l">EDGE</div>${s.pop!=null?`<div class="n" style="font-size:20px;margin-top:6px">${f(s.pop)}%</div><div class="l">PoP 赢面</div>`:''}</div>
     <div class="ctop">
-      <div class="tk">${p.ticker}<small>$${f(p.spot)} · ${f(p.dte)}DTE · 到期 ${f(p.exp)}</small></div>
+      <div class="tk">${p.ticker}<small>${p.name&&p.name!==p.ticker?p.name+' · ':''}$${f(p.spot)} · ${f(p.dte)}DTE · 到期 ${f(p.exp)}</small></div>
       <span class="badge ${sell?'sell':'buy'}">${sell?'卖方 · SELL PREMIUM':'买方 · BUY PREMIUM'}</span>
     </div>
     <div class="struct">
@@ -627,7 +656,7 @@ document.getElementById('scan').innerHTML = `<table>
   <tr><th>标的</th><th>现价</th><th>IV</th><th>HV30</th><th>VRP</th><th>IVR</th><th>HVR</th>
       <th>±预期</th><th>趋势</th><th>OI</th><th>Edge</th><th>判定</th></tr>
   ${DATA.universe.map(u=>`<tr>
-    <td>${u.ticker}</td><td>$${f(u.spot)}</td><td>${f(u.atm_iv)}%</td><td>${f(u.hv30)}%</td>
+    <td>${u.ticker}${u.name&&u.name!==u.ticker?` <span style="color:var(--dim);font-weight:400;font-size:11px">${u.name}</span>`:''}</td><td>$${f(u.spot)}</td><td>${f(u.atm_iv)}%</td><td>${f(u.hv30)}%</td>
     <td>${f(u.vrp)}×</td><td>${f(u.iv_rank)}</td><td>${f(u.hv_rank)}</td>
     <td>±${f(u.exp_move)}%</td><td class="${trendCls(u.trend)}">${f(u.trend)}</td>
     <td>${(u.oi||0).toLocaleString()}</td><td><b>${f(u.score)}</b></td>
