@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-07 11:36",
+  "generated_at": "2026-06-07 03:40",
   "demo": false,
   "picks": [
     {
@@ -234,7 +234,7 @@
       "trend": "neutral",
       "oi": 48414,
       "vol": 7504,
-      "earnings_in": 5,
+      "earnings_in": 4,
       "score": 82.5,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -254,7 +254,7 @@
         "盈利概率 PoP ≈ 75.7% (BS 模型, 持有到期口径; tastytrade 50% 止盈通常会再抬高实际胜率)",
         "管理: 盈利 50% 止盈, 21 DTE 前了结(tastytrade 机械化规则)",
         "预期波动 ±14.58% / 流动性 OI 48,414 量 7,504",
-        "⚠ 约 5 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
+        "⚠ 约 4 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
       ]
     },
     {
@@ -271,7 +271,7 @@
       "trend": "bullish",
       "oi": 1319871,
       "vol": 213855,
-      "earnings_in": 81,
+      "earnings_in": 80,
       "score": 82.1,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -307,7 +307,7 @@
       "trend": "bullish",
       "oi": 346384,
       "vol": 61572,
-      "earnings_in": 18,
+      "earnings_in": 17,
       "score": 81.7,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -327,7 +327,7 @@
         "盈利概率 PoP ≈ 67.8% (BS 模型, 持有到期口径; tastytrade 50% 止盈通常会再抬高实际胜率)",
         "管理: 盈利 50% 止盈, 21 DTE 前了结(tastytrade 机械化规则)",
         "预期波动 ±26.99% / 流动性 OI 346,384 量 61,572",
-        "⚠ 约 18 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
+        "⚠ 约 17 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
       ]
     },
     {
@@ -344,7 +344,7 @@
       "trend": "bullish",
       "oi": 249729,
       "vol": 78119,
-      "earnings_in": 53,
+      "earnings_in": 52,
       "score": 80.7,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -452,7 +452,7 @@
       "trend": "bullish",
       "oi": 176879,
       "vol": 23161,
-      "earnings_in": 82,
+      "earnings_in": 81,
       "score": 79.7,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -488,7 +488,7 @@
       "trend": "bullish",
       "oi": 145510,
       "vol": 24386,
-      "earnings_in": 67,
+      "earnings_in": 66,
       "score": 79.1,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -524,7 +524,7 @@
       "trend": "bullish",
       "oi": 141283,
       "vol": 23550,
-      "earnings_in": 53,
+      "earnings_in": 52,
       "score": 79.0,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -633,7 +633,7 @@
       "trend": "neutral",
       "oi": 202519,
       "vol": 42662,
-      "earnings_in": 89,
+      "earnings_in": 88,
       "score": 78.3,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -669,7 +669,7 @@
       "trend": "neutral",
       "oi": 114758,
       "vol": 14355,
-      "earnings_in": 88,
+      "earnings_in": 87,
       "score": 77.4,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -705,7 +705,7 @@
       "trend": "bullish",
       "oi": 80312,
       "vol": 7381,
-      "earnings_in": 53,
+      "earnings_in": 52,
       "score": 76.8,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -777,7 +777,7 @@
       "trend": "neutral",
       "oi": 68416,
       "vol": 14953,
-      "earnings_in": 81,
+      "earnings_in": 80,
       "score": 75.9,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -813,7 +813,7 @@
       "trend": "bullish",
       "oi": 29458,
       "vol": 4048,
-      "earnings_in": 68,
+      "earnings_in": 67,
       "score": 74.9,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -885,7 +885,7 @@
       "trend": "neutral",
       "oi": 411195,
       "vol": 80728,
-      "earnings_in": 53,
+      "earnings_in": 52,
       "score": 73.0,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -921,7 +921,7 @@
       "trend": "neutral",
       "oi": 26159,
       "vol": 6002,
-      "earnings_in": -9,
+      "earnings_in": -10,
       "score": 72.5,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -941,7 +941,7 @@
         "盈利概率 PoP ≈ 76.7% (BS 模型, 持有到期口径; tastytrade 50% 止盈通常会再抬高实际胜率)",
         "管理: 盈利 50% 止盈, 21 DTE 前了结(tastytrade 机械化规则)",
         "预期波动 ±6.36% / 流动性 OI 26,159 量 6,002",
-        "⚠ 约 -9 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
+        "⚠ 约 -10 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
       ]
     },
     {
@@ -958,7 +958,7 @@
       "trend": "neutral",
       "oi": 236506,
       "vol": 26630,
-      "earnings_in": 4,
+      "earnings_in": 3,
       "score": 72.1,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -978,7 +978,7 @@
         "盈利概率 PoP ≈ 77.7% (BS 模型, 持有到期口径; tastytrade 50% 止盈通常会再抬高实际胜率)",
         "管理: 盈利 50% 止盈, 21 DTE 前了结(tastytrade 机械化规则)",
         "预期波动 ±18.71% / 流动性 OI 236,506 量 26,630",
-        "⚠ 约 4 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
+        "⚠ 约 3 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
       ]
     },
     {
@@ -1248,7 +1248,7 @@
       "trend": "bearish",
       "oi": 324987,
       "vol": 45315,
-      "earnings_in": 58,
+      "earnings_in": 57,
       "score": 63.7,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -1284,7 +1284,7 @@
       "trend": "bearish",
       "oi": 215618,
       "vol": 74993,
-      "earnings_in": 54,
+      "earnings_in": 53,
       "score": 63.3,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -1320,7 +1320,7 @@
       "trend": "bullish",
       "oi": 32412,
       "vol": 1178,
-      "earnings_in": 46,
+      "earnings_in": 45,
       "score": 61.4,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -1356,7 +1356,7 @@
       "trend": "neutral",
       "oi": 234894,
       "vol": 30476,
-      "earnings_in": 59,
+      "earnings_in": 58,
       "score": 60.7,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -1503,7 +1503,7 @@
       "trend": "bearish",
       "oi": 174440,
       "vol": 11593,
-      "earnings_in": 24,
+      "earnings_in": 23,
       "score": 57.1,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -1523,7 +1523,7 @@
         "盈利概率 PoP ≈ 79.1% (BS 模型, 持有到期口径; tastytrade 50% 止盈通常会再抬高实际胜率)",
         "管理: 盈利 50% 止盈, 21 DTE 前了结(tastytrade 机械化规则)",
         "预期波动 ±13.81% / 流动性 OI 174,440 量 11,593",
-        "⚠ 约 24 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
+        "⚠ 约 23 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
       ]
     },
     {
@@ -1613,7 +1613,7 @@
       "trend": "bullish",
       "oi": 426027,
       "vol": 73194,
-      "earnings_in": 47,
+      "earnings_in": 46,
       "score": 56.0,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -1758,7 +1758,7 @@
       "trend": "bullish",
       "oi": 230363,
       "vol": 43790,
-      "earnings_in": 59,
+      "earnings_in": 58,
       "score": 54.3,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -1830,7 +1830,7 @@
       "trend": "bearish",
       "oi": 509959,
       "vol": 85835,
-      "earnings_in": 46,
+      "earnings_in": 45,
       "score": 53.6,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -2047,7 +2047,7 @@
       "trend": "neutral",
       "oi": 20480,
       "vol": 1795,
-      "earnings_in": 60,
+      "earnings_in": 59,
       "score": 45.0,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -2083,7 +2083,7 @@
       "trend": "bearish",
       "oi": 135844,
       "vol": 32802,
-      "earnings_in": 54,
+      "earnings_in": 53,
       "score": 44.5,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -2119,7 +2119,7 @@
       "trend": "bullish",
       "oi": 308113,
       "vol": 36708,
-      "earnings_in": 47,
+      "earnings_in": 46,
       "score": 42.6,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -2155,7 +2155,7 @@
       "trend": "neutral",
       "oi": 483720,
       "vol": 127304,
-      "earnings_in": 54,
+      "earnings_in": 53,
       "score": 42.5,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -2335,7 +2335,7 @@
       "trend": "bearish",
       "oi": 257482,
       "vol": 54688,
-      "earnings_in": 53,
+      "earnings_in": 52,
       "score": 36.5,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -2479,7 +2479,7 @@
       "trend": "neutral",
       "oi": 35022,
       "vol": 2946,
-      "earnings_in": 60,
+      "earnings_in": 59,
       "score": 29.9,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -2515,7 +2515,7 @@
       "trend": "neutral",
       "oi": 32784,
       "vol": 3936,
-      "earnings_in": 52,
+      "earnings_in": 51,
       "score": 27.7,
       "regime": "SELL_PREMIUM",
       "structure": {
@@ -2551,7 +2551,7 @@
       "trend": "bearish",
       "oi": 650096,
       "vol": 74573,
-      "earnings_in": 40,
+      "earnings_in": 39,
       "score": 19.7,
       "regime": "BUY_PREMIUM",
       "structure": {
@@ -2570,7 +2570,7 @@
         "盈利概率 PoP ≈ 32.3% (BS 模型, 持有到期口径; tastytrade 50% 止盈通常会再抬高实际胜率)",
         "管理: 盈利 50% 止盈, 21 DTE 前了结(tastytrade 机械化规则)",
         "预期波动 ±10.95% / 流动性 OI 650,096 量 74,573",
-        "⚠ 约 40 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
+        "⚠ 约 39 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"
       ]
     },
     {
@@ -2587,7 +2587,7 @@
       "trend": "bullish",
       "oi": 616327,
       "vol": 53137,
-      "earnings_in": 54,
+      "earnings_in": 53,
       "score": 19.6,
       "regime": "BUY_PREMIUM",
       "structure": {
@@ -2727,7 +2727,7 @@
       "trend": "bullish",
       "oi": 28899,
       "vol": 31722,
-      "earnings_in": 54,
+      "earnings_in": 53,
       "score": 17.4,
       "regime": "BUY_PREMIUM",
       "structure": {
@@ -2867,7 +2867,7 @@
       "trend": "neutral",
       "oi": 51270,
       "vol": 3122,
-      "earnings_in": 52,
+      "earnings_in": 51,
       "score": 0.0,
       "regime": "BUY_PREMIUM",
       "structure": {
@@ -2972,7 +2972,7 @@
       "trend": "neutral",
       "oi": 71819,
       "vol": 15891,
-      "earnings_in": 52,
+      "earnings_in": 51,
       "score": 0.0,
       "regime": "BUY_PREMIUM",
       "structure": {
