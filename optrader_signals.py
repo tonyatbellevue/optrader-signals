@@ -335,6 +335,7 @@ def score_and_structure(m):
 
     # tastytrade 管理纪律: 盈利 50% 止盈 + 21 DTE 强制管理
     structure["manage"] = (f"盈利 {int(TT_PROFIT_TARGET*100)}% 平仓 / 到 {TT_MANAGE_DTE} DTE 强制管理")
+    structure["steps"] = build_steps(structure)
     pop = structure.get("pop")
     if pop is not None:
         rationale.append(
@@ -372,6 +373,25 @@ def _pick_strike_by_delta(m, target_delta, call):
             prem = (b + a) / 2 if (b > 0 and a > 0) else (r.get("lastPrice", 0) or 0)
             best, bestdiff = (float(r["strike"]), round(d, 2), round(float(prem), 2)), diff
     return best if best else (None, None, None)
+
+
+def build_steps(st):
+    """根据结构生成简单的券商下单步骤(可直接照做)。"""
+    exp = st.get("exp"); legs = st.get("legs"); manage = st.get("manage")
+    credit = st.get("credit"); debit = st.get("debit")
+    amt = credit if credit is not None else debit
+    side = "收" if credit is not None else "付"
+    steps = [
+        f"到期日选 {exp}",
+        f"下「组合限价单」(spread/multi-leg order): {legs}",
+        "卖 = Sell to Open,买 = Buy to Open;两腿放同一张单一起成交",
+    ]
+    if amt is not None:
+        steps.append(f"限价 ≈ 净{side} ${amt}/股(每张 ×100 ≈ ${amt * 100:,.0f})")
+    steps.append("数量按自己资金/风险定;先 1 张试水")
+    if manage:
+        steps.append(f"成交后挂管理单: {manage}")
+    return steps
 
 
 def pick_sell_structure(m):
@@ -530,6 +550,9 @@ HTML_SHELL = r"""<!DOCTYPE html>
   .cell .k{font-size:10px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
   .cell .v{font-size:17px;font-weight:600;margin-top:2px}
   .v.up{color:var(--green)} .v.down{color:var(--red)} .v.hot{color:var(--amber)}
+  ol.steps{margin:10px 0 4px;padding-left:20px}
+  ol.steps li{font-size:13px;line-height:1.55;color:#c8c5bd;margin:2px 0}
+  .steps-h{font-size:11px;color:var(--amber);letter-spacing:.1em;margin-top:12px;text-transform:uppercase}
   ul.why{list-style:none;padding:0;margin:0}
   ul.why li{font-family:"Newsreader",serif;font-size:15.5px;line-height:1.5;color:#d6d3cb;
     padding-left:18px;position:relative;margin:5px 0}
@@ -595,6 +618,7 @@ document.getElementById('picks').innerHTML = DATA.picks.map(p=>{
       <div class="cell"><div class="k">预期波动</div><div class="v">±${f(p.exp_move)}%</div></div>
       <div class="cell"><div class="k">趋势</div><div class="v ${trendCls(p.trend)}">${f(p.trend)}</div></div>
     </div>
+    ${s.steps?`<div class="steps-h">操作步骤</div><ol class="steps">${s.steps.map(x=>`<li>${x}</li>`).join('')}</ol>`:''}
     <ul class="why">${p.rationale.map(r=>`<li>${r}</li>`).join('')}</ul>
   </div>`;
 }).join('');
