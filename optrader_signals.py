@@ -3,16 +3,23 @@
 """
 OpTrader Signals  ——  每日 3 个期权候选生成器  (独立于 wheel-screener)
 
-方法论(顶尖期权交易员常用的量化口径):
-  1. VRP 波动率风险溢价 = ATM IV / HV30   (>1 期权偏贵, 利好卖方)
-  2. IV Rank / Percentile (程序每天把 ATM IV 存档, 逐日累积出历史来算)
+方法论 —— 以 tastytrade 机械化口径(大样本回测验证)为骨架, 取代旧版手调权重:
+  入场门槛: IV Rank > 50 才卖 premium (高于自身历史中位才有卖方边际)
+  进场到期: 约 45 DTE (收益/theta 衰减平衡最佳)
+  短腿选择: 价差 30Δ / 宽跨 16Δ (风险调整后甜区)
+  退出管理: 盈利 50% 止盈 + 21 DTE 强制管理 (对收益贡献不亚于选标的)
+
+辅助信号(用于确认/排序/避雷):
+  1. VRP 波动率风险溢价 = ATM IV / HV30  (>1 确认 IV 真贵于已实现; 学术验证的 variance risk premium)
+  2. IV Rank / Percentile (程序每天把 ATM IV 存档, 逐日累积出历史来算) —— 首要排序信号
   3. HV Rank (1年已实现波动率分位, 价格即可算, 作为 IVR 不足时的即时代理)
   4. 预期波动幅度 = ATM straddle 中价 / 现价
-  5. 趋势 = 现价 vs SMA50 / SMA200
-  6. 流动性 = ATM 到期的 OI / 量 / 平均价差%
+  5. 趋势 = 现价 vs SMA50 / SMA200 (IVR 不够门槛时才退回方向性 debit)
+  6. 流动性 = ATM 到期的 OI / 量 (闸门, OI 不足砍分)
   7. 财报临近避雷 (裸卖 premium 不宜跨财报, 除非有意做 vol crush)
 
-按以上信号规则化选结构, 跨标的打分取前 3, 写出 signals.json + 自包含 index.html。
+评分 = IVR 在门槛之上的高度(主) + VRP 确认(次), 再乘流动性闸门; 跨标的取前 3。
+评分曲线是对被验证信号(IVR)的单调变换, 不是拟合的 alpha —— 仍建议后续加回测检验。
 
 用法:
   python optrader_signals.py                 # 真实数据 (需联网 + yfinance)
@@ -63,6 +70,19 @@ DEFAULT_UNIVERSE = [
     "UBER", "ABNB", "SHOP",
 ]
 RISK_FREE = 0.045
+
+# ----------------------------- tastytrade 机械化口径 -----------------------------
+# 以下常数来自 tastytrade/tastylive 的大样本(数万笔)回测结论, 而非手调:
+#   - IV Rank > 50 才有卖方边际 (高于自身历史中位才卖 premium)
+#   - 短腿 30Δ (价差) / 16Δ (宽跨) 是风险调整后的甜区
+#   - 约 45 DTE 进场, 收益/theta 衰减平衡最佳
+#   - 盈利 50% 止盈 + 21 DTE 强制管理, 对最终收益贡献不亚于选标的
+TT_IVR_GATE = 50           # IV Rank 卖方门槛
+TT_SHORT_DELTA = 0.30      # 价差短腿目标 delta
+TT_STRANGLE_DELTA = 0.16   # 宽跨式两腿 delta
+TT_TARGET_DTE = 45         # 进场目标 DTE
+TT_PROFIT_TARGET = 0.50    # 盈利 50% 平仓
+TT_MANAGE_DTE = 21         # 21 DTE 前强制管理
 
 
 # ----------------------------- 数学工具 -----------------------------
@@ -140,7 +160,7 @@ def fetch_metrics(ticker, iv_hist, today):
     else:
         trend = "neutral"
 
-    # 选目标到期 (最接近 35 DTE)
+    # 选目标到期 (tastytrade: 最接近 45 DTE)
     exps = tk.options
     if not exps:
         return None
@@ -153,7 +173,7 @@ def fetch_metrics(ticker, iv_hist, today):
             continue
         if d < 5:
             continue
-        if best_dte is None or abs(d - 35) < abs(best_dte - 35):
+        if best_dte is None or abs(d - TT_TARGET_DTE) < abs(best_dte - TT_TARGET_DTE):
             best_exp, best_dte = e, d
     if best_exp is None:
         return None
@@ -217,7 +237,7 @@ def demo_metrics(ticker, iv_hist, today):
     vrp = round(random.uniform(0.75, 1.6), 2)
     atm_iv = round(hv30 * vrp, 1)
     trend = random.choice(["bullish", "bearish", "neutral", "neutral"])
-    dte = random.choice([30, 35, 37, 42])
+    dte = random.choice([40, 43, 45, 49])
     return dict(
         ticker=ticker, spot=spot,
         exp=(datetime.now().date() + timedelta(days=dte)).isoformat(), dte=dte,
@@ -233,42 +253,55 @@ def demo_metrics(ticker, iv_hist, today):
 
 # ----------------------------- 打分 + 选结构 -----------------------------
 def score_and_structure(m):
-    """返回 (opportunity_score 0-100, regime, structure, rationale[])。完全规则化、可解释。"""
+    """返回 (opportunity_score 0-100, regime, structure, rationale[])。
+
+    采用 tastytrade 机械化口径(大样本回测验证),取代旧版手调权重:
+      - IV Rank 是首要门槛(>50 才卖 premium)与排序依据
+      - VRP>1 仅作"IV 确实贵于已实现"的确认, 不再当主排序
+      - 过不了门槛 → 退回方向性 debit (仅在有明确趋势时给分)
+    评分曲线是对 IVR(被验证的信号)的单调变换, 不是拟合出来的 alpha。
+    """
     vrp = m["vrp"] or 1.0
     ivr = m["iv_rank"]
-    hvr = m["hv_rank"] or 50
-    rank_for_sell = ivr if ivr is not None else hvr  # IVR 不足时用 HVR 代理
+    hvr = m["hv_rank"]
+    # IVR 是 tastytrade 的核心信号; 历史不足时用 HV Rank 代理
+    rank = ivr if ivr is not None else (hvr if hvr is not None else 50)
+    rank_src = "IV Rank" if ivr is not None else "HV Rank(代理)"
 
-    # 各分项 (0-100)
-    vrp_rich = max(0, min(100, (vrp - 1.0) / 0.5 * 100))     # VRP 1.0->0, 1.5->100
-    vrp_cheap = max(0, min(100, (1.0 - vrp) / 0.25 * 100))   # VRP 1.0->0, 0.75->100
     liq = max(0, min(100, math.log10(max(m["oi"], 1)) / 6.0 * 100))
-
-    sell_edge = 0.55 * vrp_rich + 0.45 * rank_for_sell
-    buy_edge = 0.6 * vrp_cheap + 0.4 * (100 - rank_for_sell)
-    # 趋势给方向性玩法加成
-    if m["trend"] in ("bullish", "bearish"):
-        buy_edge += 12
-
     rationale = []
-    if sell_edge >= buy_edge:
-        regime = "SELL_PREMIUM"
-        base = sell_edge
-        rationale.append(f"VRP={vrp}: IV 比 HV30 高 {round((vrp-1)*100)}%,期权偏贵 → 卖方有数学优势")
-        if ivr is not None:
-            rationale.append(f"IV Rank {ivr} → 当前 IV 处于自身历史{'高' if ivr>=50 else '低'}位")
-        else:
-            rationale.append(f"IV 历史不足,暂用 HV Rank {hvr} 代理(程序每天跑会逐渐补全 IVR)")
-        structure = pick_sell_structure(m)
-    else:
-        regime = "BUY_PREMIUM"
-        base = buy_edge
-        rationale.append(f"VRP={vrp}: IV 不高于 HV,期权不贵 → 适合买方/方向性")
-        rationale.append(f"趋势 {m['trend']},顺势做 debit 结构,风险有限")
-        structure = pick_buy_structure(m)
 
-    # 流动性闸门
+    if rank >= TT_IVR_GATE:
+        # 过卖方门槛: 分数以 IVR 在门槛之上的高度为主, VRP 作确认加成
+        regime = "SELL_PREMIUM"
+        ivr_edge = (rank - TT_IVR_GATE) / (100 - TT_IVR_GATE) * 100   # 50->0, 100->100
+        vrp_conf = max(0, min(15, (vrp - 1.0) / 0.5 * 15))            # 至多 +15
+        base = min(100, 30 + 0.55 * ivr_edge + vrp_conf)             # 过门槛即有 30 底分
+        structure = pick_sell_structure(m)
+        rationale.append(f"{rank_src} {round(rank)} ≥ {TT_IVR_GATE} → 过 tastytrade 卖方门槛")
+        if vrp >= 1.0:
+            rationale.append(f"VRP={vrp}: IV 比 HV30 高 {round((vrp-1)*100)}% → 确认溢价真实")
+        else:
+            rationale.append(f"VRP={vrp}: IV 略低于 HV30, 溢价偏弱, 谨慎建仓")
+        if ivr is None:
+            rationale.append("IV 历史不足, 暂用 HV Rank 代理(程序每天跑会逐渐补全 IVR)")
+    else:
+        # IVR 不够: tastytrade 不建议卖 premium, 仅在有趋势时退回方向性买方
+        regime = "BUY_PREMIUM"
+        vrp_cheap = max(0, min(100, (1.0 - vrp) / 0.25 * 100))
+        directional = 20 if m["trend"] in ("bullish", "bearish") else 0
+        base = 0.5 * vrp_cheap + directional
+        structure = pick_buy_structure(m)
+        rationale.append(f"{rank_src} {round(rank)} < {TT_IVR_GATE} → 低于卖方门槛, 不卖 premium")
+        rationale.append(f"改走方向性 debit(趋势 {m['trend']}); 期权不贵时买方更划算")
+
+    # 流动性闸门 (OI 不足砍分, 防止挂不出去)
     score = round(base * (0.5 + 0.5 * liq / 100), 1)
+
+    # tastytrade 管理纪律: 盈利 50% 止盈 + 21 DTE 强制管理
+    structure["manage"] = (f"盈利 {int(TT_PROFIT_TARGET*100)}% 平仓 / 到 {TT_MANAGE_DTE} DTE 强制管理")
+    rationale.append(
+        f"管理: 盈利 {int(TT_PROFIT_TARGET*100)}% 止盈, {TT_MANAGE_DTE} DTE 前了结(tastytrade 机械化规则)")
     rationale.append(f"预期波动 ±{m['exp_move']}% / 流动性 OI {m['oi']:,} 量 {m['vol']:,}")
     if m["earnings_in"] is not None and m["earnings_in"] <= m["dte"]:
         rationale.append(f"⚠ 约 {m['earnings_in']} 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓")
@@ -305,22 +338,22 @@ def _pick_strike_by_delta(m, target_delta, call):
 def pick_sell_structure(m):
     trend = m["trend"]
     if trend == "bullish":
-        ks, ds, ps = _pick_strike_by_delta(m, 0.25, call=False)
+        ks, ds, ps = _pick_strike_by_delta(m, TT_SHORT_DELTA, call=False)
         kl = round(ks * 0.92, 0) if ks else None
         return dict(type="Put Credit Spread (bull)", legs=f"卖 {ks}P / 买 {kl}P",
                     exp=m["exp"], short_delta=ds, credit=ps,
-                    note="看不跌就行; 净收权利金, 风险有限")
+                    note=f"看不跌就行; 30Δ 短腿, 净收权利金, 风险有限")
     if trend == "bearish":
-        ks, ds, ps = _pick_strike_by_delta(m, 0.25, call=True)
+        ks, ds, ps = _pick_strike_by_delta(m, TT_SHORT_DELTA, call=True)
         kl = round(ks * 1.08, 0) if ks else None
         return dict(type="Call Credit Spread (bear)", legs=f"卖 {ks}C / 买 {kl}C",
                     exp=m["exp"], short_delta=ds, credit=ps,
-                    note="看不涨就行; 净收权利金, 风险有限")
-    kp, dp, pp = _pick_strike_by_delta(m, 0.18, call=False)
-    kc, dc, pc = _pick_strike_by_delta(m, 0.18, call=True)
+                    note=f"看不涨就行; 30Δ 短腿, 净收权利金, 风险有限")
+    kp, dp, pp = _pick_strike_by_delta(m, TT_STRANGLE_DELTA, call=False)
+    kc, dc, pc = _pick_strike_by_delta(m, TT_STRANGLE_DELTA, call=True)
     return dict(type="Short Strangle (neutral)", legs=f"卖 {kp}P + 卖 {kc}C",
-                exp=m["exp"], short_delta=f"±0.18", credit=round((pp or 0) + (pc or 0), 2),
-                note="中性收两边权利金; 高 IV 环境经典卖方结构, 注意双向风险")
+                exp=m["exp"], short_delta=f"±{TT_STRANGLE_DELTA}", credit=round((pp or 0) + (pc or 0), 2),
+                note="中性收两边权利金; 16Δ 宽跨, 高 IV 经典卖方结构, 注意双向风险")
 
 
 def pick_buy_structure(m):
@@ -505,6 +538,7 @@ document.getElementById('picks').innerHTML = DATA.picks.map(p=>{
       <div class="ty">${s.type}</div>
       <div class="lg">${s.legs}　<span class="nt">(${legLabel})</span></div>
       <div class="nt">${s.note}　|　short Δ ${f(s.short_delta||s.long_delta)}</div>
+      ${s.manage?`<div class="nt">管理　${s.manage}</div>`:''}
     </div>
     <div class="grid">
       <div class="cell"><div class="k">ATM IV</div><div class="v hot">${f(p.atm_iv)}%</div></div>
