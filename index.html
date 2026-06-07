@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="900">
+<title>OpTrader · Signals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz@0,6..72;1,6..72&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0b0d; --panel:#121419; --panel2:#171a21; --line:#262a33;
+    --ink:#e8e6e0; --dim:#8a8f9a; --amber:#ffb000; --amber2:#5a4410;
+    --green:#3fb950; --red:#f0564a; --blue:#5aa9e6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"IBM Plex Mono",monospace;
+    background-image:radial-gradient(circle at 1px 1px,#ffffff08 1px,transparent 0);
+    background-size:22px 22px;}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px}
+  header{display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:2px solid var(--amber);padding-bottom:14px;margin-bottom:6px}
+  h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;
+    font-size:clamp(30px,6vw,52px);margin:0;letter-spacing:-.02em;line-height:.95}
+  h1 .dot{color:var(--amber)}
+  .meta{text-align:right;font-size:12px;color:var(--dim);line-height:1.7}
+  .meta b{color:var(--ink)}
+  .demo{display:inline-block;background:var(--amber);color:#000;font-weight:600;
+    padding:2px 8px;border-radius:3px;font-size:11px;margin-top:4px}
+  .tag{font-size:11px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;
+    margin:30px 0 12px}
+  .cards{display:grid;gap:16px}
+  .card{background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);border-radius:10px;padding:20px 22px;position:relative;
+    overflow:hidden;opacity:0;transform:translateY(14px);
+    animation:rise .6s cubic-bezier(.2,.8,.2,1) forwards}
+  .card:nth-child(1){animation-delay:.05s}
+  .card:nth-child(2){animation-delay:.15s}
+  .card:nth-child(3){animation-delay:.25s}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+  .card.sell::before{background:var(--green)}
+  .card.buy::before{background:var(--blue)}
+  .ctop{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .tk{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:32px;letter-spacing:-.02em}
+  .tk small{font-family:"IBM Plex Mono";font-weight:400;font-size:13px;color:var(--dim);margin-left:8px}
+  .badge{font-size:11px;font-weight:600;padding:5px 10px;border-radius:4px;letter-spacing:.08em}
+  .badge.sell{background:#143020;color:var(--green);border:1px solid #1f5132}
+  .badge.buy{background:#102234;color:var(--blue);border:1px solid #1d3a55}
+  .struct{margin:14px 0;padding:12px 14px;background:#0d0f13;border:1px dashed var(--line);border-radius:7px}
+  .struct .ty{font-weight:600;color:var(--amber);font-size:14px}
+  .struct .lg{font-size:18px;margin:6px 0;letter-spacing:.01em}
+  .struct .nt{font-size:12px;color:var(--dim)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:7px;overflow:hidden;margin:6px 0 14px}
+  .cell{background:var(--panel);padding:9px 10px}
+  .cell .k{font-size:10px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+  .cell .v{font-size:17px;font-weight:600;margin-top:2px}
+  .v.up{color:var(--green)} .v.down{color:var(--red)} .v.hot{color:var(--amber)}
+  ul.why{list-style:none;padding:0;margin:0}
+  ul.why li{font-family:"Newsreader",serif;font-size:15.5px;line-height:1.5;color:#d6d3cb;
+    padding-left:18px;position:relative;margin:5px 0}
+  ul.why li::before{content:"▸";position:absolute;left:0;color:var(--amber)}
+  .score{position:absolute;top:18px;right:22px;text-align:center}
+  .score .n{font-family:"Bricolage Grotesque";font-weight:800;font-size:30px;color:var(--amber);line-height:1}
+  .score .l{font-size:9px;color:var(--dim);letter-spacing:.15em}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+  th,td{text-align:right;padding:7px 9px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-weight:500;text-transform:uppercase;font-size:10px;letter-spacing:.08em}
+  td:first-child,th:first-child{text-align:left;font-weight:600}
+  tr:hover td{background:#15171d}
+  footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);
+    font-size:11.5px;color:var(--dim);line-height:1.7}
+  footer b{color:var(--amber)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>OpTrader<span class="dot">.</span>Signals</h1>
+    <div class="meta" id="meta"></div>
+  </header>
+  <div class="tag">// 今日 3 个候选 · 量化方法论 + 数据论证</div>
+  <div class="cards" id="picks"></div>
+  <div class="tag">// 全市场扫描</div>
+  <div id="scan"></div>
+  <footer id="foot"></footer>
+</div>
+<script id="payload" type="application/json">{"generated_at": "2026-06-06 22:22", "demo": true, "picks": [{"ticker": "GOOGL", "spot": 583.24, "exp": "2026-07-06", "dte": 30, "atm_iv": 39.1, "hv30": 47.7, "vrp": 0.82, "iv_rank": 26.0, "hv_rank": 39.2, "exp_move": 11.21, "trend": "neutral", "oi": 244236, "vol": 97747, "earnings_in": null, "score": 69.1, "regime": "BUY_PREMIUM", "structure": {"type": "Call Debit Spread (bull)", "legs": "买 622.0C / 卖 684.0C", "exp": "2026-07-06", "long_delta": 0.31, "debit": 26.15, "note": "顺势看涨; 付权利金, 风险=权利金"}, "rationale": ["VRP=0.82: IV 不高于 HV,期权不贵 → 适合买方/方向性", "趋势 neutral,顺势做 debit 结构,风险有限", "预期波动 ±11.21% / 流动性 OI 244,236 量 97,747"]}, {"ticker": "AMZN", "spot": 208.29, "exp": "2026-07-18", "dte": 42, "atm_iv": 44.2, "hv30": 56.7, "vrp": 0.78, "iv_rank": 61.3, "hv_rank": 73.3, "exp_move": 14.99, "trend": "neutral", "oi": 891279, "vol": 291659, "earnings_in": null, "score": 68.0, "regime": "BUY_PREMIUM", "structure": {"type": "Call Debit Spread (bull)", "legs": "买 227.0C / 卖 250.0C", "exp": "2026-07-18", "long_delta": 0.32, "debit": 12.49, "note": "顺势看涨; 付权利金, 风险=权利金"}, "rationale": ["VRP=0.78: IV 不高于 HV,期权不贵 → 适合买方/方向性", "趋势 neutral,顺势做 debit 结构,风险有限", "预期波动 ±14.99% / 流动性 OI 891,279 量 291,659"]}, {"ticker": "JPM", "spot": 180.05, "exp": "2026-07-11", "dte": 35, "atm_iv": 71.9, "hv30": 50.6, "vrp": 1.42, "iv_rank": 45.1, "hv_rank": 36.0, "exp_move": 22.26, "trend": "neutral", "oi": 193205, "vol": 223708, "earnings_in": null, "score": 62.5, "regime": "SELL_PREMIUM", "structure": {"type": "Short Strangle (neutral)", "legs": "卖 144.0P + 卖 216.0C", "exp": "2026-07-11", "short_delta": "±0.18", "credit": 32.08, "note": "中性收两边权利金; 高 IV 环境经典卖方结构, 注意双向风险"}, "rationale": ["VRP=1.42: IV 比 HV30 高 42%,期权偏贵 → 卖方有数学优势", "IV Rank 45.1 → 当前 IV 处于自身历史低位", "预期波动 ±22.26% / 流动性 OI 193,205 量 223,708"]}], "universe": [{"ticker": "GOOGL", "spot": 583.24, "exp": "2026-07-06", "dte": 30, "atm_iv": 39.1, "hv30": 47.7, "vrp": 0.82, "iv_rank": 26.0, "hv_rank": 39.2, "exp_move": 11.21, "trend": "neutral", "oi": 244236, "vol": 97747, "earnings_in": null, "score": 69.1, "regime": "BUY_PREMIUM", "structure": {"type": "Call Debit Spread (bull)", "legs": "买 622.0C / 卖 684.0C", "exp": "2026-07-06", "long_delta": 0.31, "debit": 26.15, "note": "顺势看涨; 付权利金, 风险=权利金"}, "rationale": ["VRP=0.82: IV 不高于 HV,期权不贵 → 适合买方/方向性", "趋势 neutral,顺势做 debit 结构,风险有限", "预期波动 ±11.21% / 流动性 OI 244,236 量 97,747"]}, {"ticker": "AMZN", "spot": 208.29, "exp": "2026-07-18", "dte": 42, "atm_iv": 44.2, "hv30": 56.7, "vrp": 0.78, "iv_rank": 61.3, "hv_rank": 73.3, "exp_move": 14.99, "trend": "neutral", "oi": 891279, "vol": 291659, "earnings_in": null, "score": 68.0, "regime": "BUY_PREMIUM", "structure": {"type": "Call Debit Spread (bull)", "legs": "买 227.0C / 卖 250.0C", "exp": "2026-07-18", "long_delta": 0.32, "debit": 12.49, "note": "顺势看涨; 付权利金, 风险=权利金"}, "rationale": ["VRP=0.78: IV 不高于 HV,期权不贵 → 适合买方/方向性", "趋势 neutral,顺势做 debit 结构,风险有限", "预期波动 ±14.99% / 流动性 OI 891,279 量 291,659"]}, {"ticker": "JPM", "spot": 180.05, "exp": "2026-07-11", "dte": 35, "atm_iv": 71.9, "hv30": 50.6, "vrp": 1.42, "iv_rank": 45.1, "hv_rank": 36.0, "exp_move": 22.26, "trend": "neutral", "oi": 193205, "vol": 223708, "earnings_in": null, "score": 62.5, "regime": "SELL_PREMIUM", "structure": {"type": "Short Strangle (neutral)", "legs": "卖 144.0P + 卖 216.0C", "exp": "2026-07-11", "short_delta": "±0.18", "credit": 32.08, "note": "中性收两边权利金; 高 IV 环境经典卖方结构, 注意双向风险"}, "rationale": ["VRP=1.42: IV 比 HV30 高 42%,期权偏贵 → 卖方有数学优势", "IV Rank 45.1 → 当前 IV 处于自身历史低位", "预期波动 ±22.26% / 流动性 OI 193,205 量 223,708"]}, {"ticker": "NVDA", "spot": 309.67, "exp": "2026-07-18", "dte": 42, "atm_iv": 30.3, "hv30": 23.7, "vrp": 1.28, "iv_rank": 62.1, "hv_rank": 8.3, "exp_move": 10.28, "trend": "neutral", "oi": 224840, "vol": 368207, "earnings_in": null, "score": 55.6, "regime": "SELL_PREMIUM", "structure": {"type": "Short Strangle (neutral)", "legs": "卖 281.0P + 卖 338.0C", "exp": "2026-07-18", "short_delta": "±0.18", "credit": 25.46, "note": "中性收两边权利金; 高 IV 环境经典卖方结构, 注意双向风险"}, "rationale": ["VRP=1.28: IV 比 HV30 高 28%,期权偏贵 → 卖方有数学优势", "IV Rank 62.1 → 当前 IV 处于自身历史高位", "预期波动 ±10.28% / 流动性 OI 224,840 量 368,207"]}, {"ticker": "SMCI", "spot": 662.62, "exp": "2026-07-11", "dte": 35, "atm_iv": 44.5, "hv30": 36.2, "vrp": 1.23, "iv_rank": 67.1, "hv_rank": 34.8, "exp_move": 13.78, "trend": "bullish", "oi": 815298, "vol": 19040, "earnings_in": 21, "score": 55.1, "regime": "SELL_PREMIUM", "structure": {"type": "Put Credit Spread (bull)", "legs": "卖 580.0P / 买 534.0P", "exp": "2026-07-11", "short_delta": -0.14, "credit": 36.52, "note": "看不跌就行; 净收权利金, 风险有限"}, "rationale": ["VRP=1.23: IV 比 HV30 高 23%,期权偏贵 → 卖方有数学优势", "IV Rank 67.1 → 当前 IV 处于自身历史高位", "预期波动 ±13.78% / 流动性 OI 815,298 量 19,040", "⚠ 约 21 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"]}, {"ticker": "AMD", "spot": 107.53, "exp": "2026-07-11", "dte": 35, "atm_iv": 36.4, "hv30": 40.9, "vrp": 0.89, "iv_rank": 17.9, "hv_rank": 47.3, "exp_move": 11.27, "trend": "neutral", "oi": 122983, "vol": 361710, "earnings_in": null, "score": 54.7, "regime": "BUY_PREMIUM", "structure": {"type": "Call Debit Spread (bull)", "legs": "买 115.0C / 卖 127.0C", "exp": "2026-07-11", "long_delta": 0.31, "debit": 4.85, "note": "顺势看涨; 付权利金, 风险=权利金"}, "rationale": ["VRP=0.89: IV 不高于 HV,期权不贵 → 适合买方/方向性", "趋势 neutral,顺势做 debit 结构,风险有限", "预期波动 ±11.27% / 流动性 OI 122,983 量 361,710"]}, {"ticker": "AVGO", "spot": 127.92, "exp": "2026-07-13", "dte": 37, "atm_iv": 31.9, "hv30": 28.0, "vrp": 1.14, "iv_rank": 84.2, "hv_rank": 41.8, "exp_move": 10.16, "trend": "neutral", "oi": 864052, "vol": 56766, "earnings_in": 21, "score": 53.0, "regime": "SELL_PREMIUM", "structure": {"type": "Short Strangle (neutral)", "legs": "卖 116.0P + 卖 140.0C", "exp": "2026-07-13", "short_delta": "±0.18", "credit": 10.4, "note": "中性收两边权利金; 高 IV 环境经典卖方结构, 注意双向风险"}, "rationale": ["VRP=1.14: IV 比 HV30 高 14%,期权偏贵 → 卖方有数学优势", "IV Rank 84.2 → 当前 IV 处于自身历史高位", "预期波动 ±10.16% / 流动性 OI 864,052 量 56,766", "⚠ 约 21 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"]}, {"ticker": "IWM", "spot": 652.83, "exp": "2026-07-06", "dte": 30, "atm_iv": 79.8, "hv30": 61.4, "vrp": 1.3, "iv_rank": 37.2, "hv_rank": 24.5, "exp_move": 22.88, "trend": "neutral", "oi": 857133, "vol": 306823, "earnings_in": 21, "score": 49.5, "regime": "SELL_PREMIUM", "structure": {"type": "Short Strangle (neutral)", "legs": "卖 518.0P + 卖 787.0C", "exp": "2026-07-06", "short_delta": "±0.18", "credit": 119.48, "note": "中性收两边权利金; 高 IV 环境经典卖方结构, 注意双向风险"}, "rationale": ["VRP=1.3: IV 比 HV30 高 30%,期权偏贵 → 卖方有数学优势", "IV Rank 37.2 → 当前 IV 处于自身历史低位", "预期波动 ±22.88% / 流动性 OI 857,133 量 306,823", "⚠ 约 21 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"]}, {"ticker": "META", "spot": 471.34, "exp": "2026-07-13", "dte": 37, "atm_iv": 57.3, "hv30": 51.2, "vrp": 1.12, "iv_rank": 7.0, "hv_rank": 87.6, "exp_move": 18.24, "trend": "bearish", "oi": 620177, "vol": 293875, "earnings_in": 8, "score": 48.3, "regime": "BUY_PREMIUM", "structure": {"type": "Put Debit Spread (bear)", "legs": "买 420.0P / 卖 378.0P", "exp": "2026-07-13", "long_delta": -0.23, "debit": 34.4, "note": "顺势看跌; 付权利金, 风险=权利金"}, "rationale": ["VRP=1.12: IV 不高于 HV,期权不贵 → 适合买方/方向性", "趋势 bearish,顺势做 debit 结构,风险有限", "预期波动 ±18.24% / 流动性 OI 620,177 量 293,875", "⚠ 约 8 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"]}, {"ticker": "SPY", "spot": 127.98, "exp": "2026-07-18", "dte": 42, "atm_iv": 53.3, "hv30": 38.9, "vrp": 1.37, "iv_rank": 10.2, "hv_rank": 34.1, "exp_move": 18.08, "trend": "neutral", "oi": 421980, "vol": 28996, "earnings_in": null, "score": 43.9, "regime": "SELL_PREMIUM", "structure": {"type": "Short Strangle (neutral)", "legs": "卖 107.0P + 卖 149.0C", "exp": "2026-07-18", "short_delta": "±0.18", "credit": 18.52, "note": "中性收两边权利金; 高 IV 环境经典卖方结构, 注意双向风险"}, "rationale": ["VRP=1.37: IV 比 HV30 高 37%,期权偏贵 → 卖方有数学优势", "IV Rank 10.2 → 当前 IV 处于自身历史低位", "预期波动 ±18.08% / 流动性 OI 421,980 量 28,996"]}, {"ticker": "GLD", "spot": 88.96, "exp": "2026-07-11", "dte": 35, "atm_iv": 67.9, "hv30": 61.7, "vrp": 1.1, "iv_rank": 21.2, "hv_rank": 6.3, "exp_move": 21.03, "trend": "bearish", "oi": 170341, "vol": 287345, "earnings_in": 8, "score": 40.7, "regime": "BUY_PREMIUM", "structure": {"type": "Put Debit Spread (bear)", "legs": "买 78.0P / 卖 70.0P", "exp": "2026-07-11", "long_delta": -0.23, "debit": 7.48, "note": "顺势看跌; 付权利金, 风险=权利金"}, "rationale": ["VRP=1.1: IV 不高于 HV,期权不贵 → 适合买方/方向性", "趋势 bearish,顺势做 debit 结构,风险有限", "预期波动 ±21.03% / 流动性 OI 170,341 量 287,345", "⚠ 约 8 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"]}, {"ticker": "COIN", "spot": 224.31, "exp": "2026-07-11", "dte": 35, "atm_iv": 38.9, "hv30": 38.1, "vrp": 1.02, "iv_rank": 84.5, "hv_rank": 93.2, "exp_move": 12.05, "trend": "bearish", "oi": 875741, "vol": 337005, "earnings_in": null, "score": 40.0, "regime": "SELL_PREMIUM", "structure": {"type": "Call Credit Spread (bear)", "legs": "卖 249.0C / 买 269.0C", "exp": "2026-07-11", "short_delta": 0.22, "credit": 10.81, "note": "看不涨就行; 净收权利金, 风险有限"}, "rationale": ["VRP=1.02: IV 比 HV30 高 2%,期权偏贵 → 卖方有数学优势", "IV Rank 84.5 → 当前 IV 处于自身历史高位", "预期波动 ±12.05% / 流动性 OI 875,741 量 337,005"]}, {"ticker": "MSFT", "spot": 63.11, "exp": "2026-07-06", "dte": 30, "atm_iv": 30.8, "hv30": 29.9, "vrp": 1.03, "iv_rank": 81.7, "hv_rank": 37.2, "exp_move": 8.83, "trend": "neutral", "oi": 579222, "vol": 178975, "earnings_in": null, "score": 39.3, "regime": "SELL_PREMIUM", "structure": {"type": "Short Strangle (neutral)", "legs": "卖 58.0P + 卖 68.0C", "exp": "2026-07-06", "short_delta": "±0.18", "credit": 4.46, "note": "中性收两边权利金; 高 IV 环境经典卖方结构, 注意双向风险"}, "rationale": ["VRP=1.03: IV 比 HV30 高 3%,期权偏贵 → 卖方有数学优势", "IV Rank 81.7 → 当前 IV 处于自身历史高位", "预期波动 ±8.83% / 流动性 OI 579,222 量 178,975"]}, {"ticker": "NFLX", "spot": 410.41, "exp": "2026-07-18", "dte": 42, "atm_iv": 60.4, "hv30": 55.4, "vrp": 1.09, "iv_rank": 66.5, "hv_rank": 35.5, "exp_move": 20.49, "trend": "neutral", "oi": 190996, "vol": 272189, "earnings_in": null, "score": 37.4, "regime": "SELL_PREMIUM", "structure": {"type": "Short Strangle (neutral)", "legs": "卖 335.0P + 卖 486.0C", "exp": "2026-07-18", "short_delta": "±0.18", "credit": 67.28, "note": "中性收两边权利金; 高 IV 环境经典卖方结构, 注意双向风险"}, "rationale": ["VRP=1.09: IV 比 HV30 高 9%,期权偏贵 → 卖方有数学优势", "IV Rank 66.5 → 当前 IV 处于自身历史高位", "预期波动 ±20.49% / 流动性 OI 190,996 量 272,189"]}, {"ticker": "QQQ", "spot": 539.02, "exp": "2026-07-06", "dte": 30, "atm_iv": 23.1, "hv30": 21.6, "vrp": 1.07, "iv_rank": 66.6, "hv_rank": 10.6, "exp_move": 6.62, "trend": "bullish", "oi": 463387, "vol": 89838, "earnings_in": 8, "score": 36.6, "regime": "SELL_PREMIUM", "structure": {"type": "Put Credit Spread (bull)", "legs": "卖 507.0P / 买 466.0P", "exp": "2026-07-06", "short_delta": -0.16, "credit": 14.28, "note": "看不跌就行; 净收权利金, 风险有限"}, "rationale": ["VRP=1.07: IV 比 HV30 高 7%,期权偏贵 → 卖方有数学优势", "IV Rank 66.6 → 当前 IV 处于自身历史高位", "预期波动 ±6.62% / 流动性 OI 463,387 量 89,838", "⚠ 约 8 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"]}, {"ticker": "TSLA", "spot": 663.58, "exp": "2026-07-18", "dte": 42, "atm_iv": 50.2, "hv30": 47.4, "vrp": 1.06, "iv_rank": 70.9, "hv_rank": 31.3, "exp_move": 17.03, "trend": "neutral", "oi": 131851, "vol": 239712, "earnings_in": null, "score": 35.7, "regime": "SELL_PREMIUM", "structure": {"type": "Short Strangle (neutral)", "legs": "卖 562.0P + 卖 765.0C", "exp": "2026-07-18", "short_delta": "±0.18", "credit": 90.4, "note": "中性收两边权利金; 高 IV 环境经典卖方结构, 注意双向风险"}, "rationale": ["VRP=1.06: IV 比 HV30 高 6%,期权偏贵 → 卖方有数学优势", "IV Rank 70.9 → 当前 IV 处于自身历史高位", "预期波动 ±17.03% / 流动性 OI 131,851 量 239,712"]}, {"ticker": "AAPL", "spot": 428.51, "exp": "2026-07-13", "dte": 37, "atm_iv": 31.7, "hv30": 31.7, "vrp": 1.0, "iv_rank": 72.7, "hv_rank": 5.9, "exp_move": 10.09, "trend": "bullish", "oi": 820646, "vol": 351008, "earnings_in": 40, "score": 32.5, "regime": "SELL_PREMIUM", "structure": {"type": "Put Credit Spread (bull)", "legs": "卖 390.0P / 买 359.0P", "exp": "2026-07-13", "short_delta": -0.15, "credit": 17.3, "note": "看不跌就行; 净收权利金, 风险有限"}, "rationale": ["VRP=1.0: IV 比 HV30 高 0%,期权偏贵 → 卖方有数学优势", "IV Rank 72.7 → 当前 IV 处于自身历史高位", "预期波动 ±10.09% / 流动性 OI 820,646 量 351,008"]}, {"ticker": "MSTR", "spot": 277.31, "exp": "2026-07-13", "dte": 37, "atm_iv": 56.7, "hv30": 56.1, "vrp": 1.01, "iv_rank": 61.9, "hv_rank": 49.2, "exp_move": 18.05, "trend": "bullish", "oi": 802929, "vol": 227405, "earnings_in": 8, "score": 28.7, "regime": "SELL_PREMIUM", "structure": {"type": "Put Credit Spread (bull)", "legs": "卖 232.0P / 买 213.0P", "exp": "2026-07-13", "short_delta": -0.13, "credit": 20.02, "note": "看不跌就行; 净收权利金, 风险有限"}, "rationale": ["VRP=1.01: IV 比 HV30 高 1%,期权偏贵 → 卖方有数学优势", "IV Rank 61.9 → 当前 IV 处于自身历史高位", "预期波动 ±18.05% / 流动性 OI 802,929 量 227,405", "⚠ 约 8 天后财报落在到期内 —— 卖方注意 IV crush/跳空,可改做财报后或缩仓"]}]}</script>
+<script>
+const DATA = JSON.parse(document.getElementById('payload').textContent);
+const f = n => (n==null?'—':n);
+const trendCls = t => t==='bullish'?'up':(t==='bearish'?'down':'');
+
+document.getElementById('meta').innerHTML =
+  `更新 <b>${DATA.generated_at}</b><br>扫描 ${DATA.universe.length} 标的 · 取前 ${DATA.picks.length}`
+  + (DATA.demo?'<br><span class="demo">DEMO 合成数据</span>':'')
+  + `<br>每 15 分钟自动刷新`;
+
+document.getElementById('picks').innerHTML = DATA.picks.map(p=>{
+  const sell = p.regime==='SELL_PREMIUM';
+  const s = p.structure;
+  const legLabel = sell ? (s.credit!=null?`净收权利金 ≈ $${s.credit}`:'') : (s.debit!=null?`成本 ≈ $${s.debit}`:'');
+  return `<div class="card ${sell?'sell':'buy'}">
+    <div class="score"><div class="n">${f(p.score)}</div><div class="l">EDGE</div></div>
+    <div class="ctop">
+      <div class="tk">${p.ticker}<small>$${f(p.spot)} · ${f(p.dte)}DTE · 到期 ${f(p.exp)}</small></div>
+      <span class="badge ${sell?'sell':'buy'}">${sell?'卖方 · SELL PREMIUM':'买方 · BUY PREMIUM'}</span>
+    </div>
+    <div class="struct">
+      <div class="ty">${s.type}</div>
+      <div class="lg">${s.legs}　<span class="nt">(${legLabel})</span></div>
+      <div class="nt">${s.note}　|　short Δ ${f(s.short_delta||s.long_delta)}</div>
+    </div>
+    <div class="grid">
+      <div class="cell"><div class="k">ATM IV</div><div class="v hot">${f(p.atm_iv)}%</div></div>
+      <div class="cell"><div class="k">HV30</div><div class="v">${f(p.hv30)}%</div></div>
+      <div class="cell"><div class="k">VRP</div><div class="v ${p.vrp>=1.15?'hot':''}">${f(p.vrp)}×</div></div>
+      <div class="cell"><div class="k">IV Rank</div><div class="v">${f(p.iv_rank)}</div></div>
+      <div class="cell"><div class="k">HV Rank</div><div class="v">${f(p.hv_rank)}</div></div>
+      <div class="cell"><div class="k">预期波动</div><div class="v">±${f(p.exp_move)}%</div></div>
+      <div class="cell"><div class="k">趋势</div><div class="v ${trendCls(p.trend)}">${f(p.trend)}</div></div>
+    </div>
+    <ul class="why">${p.rationale.map(r=>`<li>${r}</li>`).join('')}</ul>
+  </div>`;
+}).join('');
+
+document.getElementById('scan').innerHTML = `<table>
+  <tr><th>标的</th><th>现价</th><th>IV</th><th>HV30</th><th>VRP</th><th>IVR</th><th>HVR</th>
+      <th>±预期</th><th>趋势</th><th>OI</th><th>Edge</th><th>判定</th></tr>
+  ${DATA.universe.map(u=>`<tr>
+    <td>${u.ticker}</td><td>$${f(u.spot)}</td><td>${f(u.atm_iv)}%</td><td>${f(u.hv30)}%</td>
+    <td>${f(u.vrp)}×</td><td>${f(u.iv_rank)}</td><td>${f(u.hv_rank)}</td>
+    <td>±${f(u.exp_move)}%</td><td class="${trendCls(u.trend)}">${f(u.trend)}</td>
+    <td>${(u.oi||0).toLocaleString()}</td><td><b>${f(u.score)}</b></td>
+    <td>${u.regime==='SELL_PREMIUM'?'卖方':'买方'}</td></tr>`).join('')}
+</table>`;
+
+document.getElementById('foot').innerHTML =
+  `<b>方法论</b>: VRP=ATM IV÷HV30(>1 期权偏贵利好卖方) · IV/HV Rank=波动率自身历史分位 · `
+  + `预期波动由 ATM straddle 反推 · 趋势=价 vs SMA50/200 · 财报临近避雷。<br>`
+  + `<b>免责</b>: 数据来自 Yahoo Finance,有延迟;盘后为上一交易日快照。这是系统化筛选/教育工具,`
+  + `<b>不构成投资建议</b>。实际行权价、仓位与成交价请以券商实时盘口为准,并结合你的整体持仓自行判断。`;
+</script>
+</body>
+</html>

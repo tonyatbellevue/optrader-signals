@@ -1,0 +1,34 @@
+name: daily-signals
+
+# 每个美股交易日收盘后跑 (21:30 UTC ≈ 收盘后 1 小时左右; 可按需调)
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"
+  workflow_dispatch: {}        # 也可手动触发
+
+permissions:
+  contents: write              # 允许把生成结果 commit 回仓库
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Generate signals
+        run: python optrader_signals.py
+
+      - name: Commit updated dashboard + IV history
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add index.html signals.json data/iv_history.json
+          git commit -m "signals: $(date -u +%Y-%m-%d)" || echo "no changes"
+          git push
