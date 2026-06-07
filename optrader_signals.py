@@ -39,10 +39,28 @@ for _stream in (sys.stdout, sys.stderr):
     except (AttributeError, ValueError):
         pass
 
-# 默认观察池 (流动性好、期权活跃; 故意与 wheel 篮子区分开)
+# 默认观察池 (流动性好、期权活跃; 故意与 wheel 篮子区分开) —— 80 个
 DEFAULT_UNIVERSE = [
-    "SPY", "QQQ", "IWM", "NVDA", "AAPL", "MSFT", "AMZN", "META", "GOOGL",
-    "TSLA", "AMD", "AVGO", "NFLX", "JPM", "COIN", "SMCI", "MSTR", "GLD",
+    # 指数 / 板块 ETF (15)
+    "SPY", "QQQ", "IWM", "DIA", "GLD", "SLV", "TLT", "HYG",
+    "XLF", "XLE", "XLK", "SMH", "ARKK", "EEM", "FXI",
+    # 科技龙头 / 半导体 / AI (24)
+    "NVDA", "AAPL", "MSFT", "AMZN", "META", "GOOGL", "TSLA", "AMD",
+    "AVGO", "NFLX", "CRM", "ORCL", "ADBE", "INTC", "QCOM", "MU",
+    "AMAT", "TXN", "CSCO", "PLTR", "SMCI", "MRVL", "ARM", "SNOW",
+    # 金融 / 支付 (12)
+    "JPM", "BAC", "GS", "MS", "WFC", "C", "V", "MA",
+    "AXP", "COIN", "PYPL", "SOFI",
+    # 消费 / 零售 (10)
+    "DIS", "NKE", "SBUX", "MCD", "COST", "WMT", "TGT", "HD", "LOW", "BA",
+    # 医药 / 生物 (6)
+    "UNH", "LLY", "JNJ", "PFE", "MRNA", "ABBV",
+    # 能源 / 工业 (7)
+    "XOM", "CVX", "OXY", "CAT", "GE", "F", "GM",
+    # 加密相关 / 高波动 (3)
+    "MSTR", "RIOT", "MARA",
+    # 其它成长 (3)
+    "UBER", "ABNB", "SHOP",
 ]
 RISK_FREE = 0.045
 
