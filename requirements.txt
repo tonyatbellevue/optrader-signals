@@ -1,3 +1,5 @@
-yfinance>=1.4.1
-pandas
-numpy
+# 固定到确切版本, 避免 GitHub Actions 自动升级到不兼容新版导致 daily.yml 静默失败
+# 升级时请本地先跑 optrader_signals.py + backtest_optrader.py 验证再放宽
+yfinance==1.4.1
+pandas==3.0.2
+numpy==2.4.4

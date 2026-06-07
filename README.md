@@ -33,9 +33,10 @@ pip install -r requirements.txt
 
 python optrader_signals.py            # 真实数据(需联网)
 python optrader_signals.py --demo     # 合成数据,不联网,先预览仪表盘
+python optrader_signals.py --open     # 跑完自动用默认浏览器打开 index.html
 ```
 
-跑完打开生成的 `index.html`(双击即可,数据已内嵌,无需服务器)。
+跑完打开生成的 `index.html`(双击即可,数据已内嵌,无需服务器);或加 `--open` 让脚本自动弹出。
 
 **常用参数**
 
