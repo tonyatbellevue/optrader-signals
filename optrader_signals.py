@@ -24,6 +24,7 @@ OpTrader Signals  ——  每日 3 个期权候选生成器  (独立于 wheel-sc
 用法:
   python optrader_signals.py                 # 真实数据 (需联网 + yfinance)
   python optrader_signals.py --demo          # 合成数据, 不联网, 用于预览
+  python optrader_signals.py --csp           # bullish 标的改出单腿裸卖 put (CSP)
   python optrader_signals.py --tickers SPY QQQ NVDA --top 3
   python optrader_signals.py --out-dir .     # 输出目录
 
@@ -378,8 +379,16 @@ def pick_sell_structure(m):
     trend = m["trend"]
     if trend == "bullish":
         ks, ds, ps = _pick_strike_by_delta(m, TT_SHORT_DELTA, call=False)
-        kl = round(ks * 0.92, 0) if ks else None
         pop = pop_for_structure(m, "put_credit", ((ks - (ps or 0)) if ks else None, None))
+        if m.get("_csp"):
+            # 单腿裸卖 put (Cash-Secured Put): 无下方保护腿, 需备足现金接货
+            collateral = round((ks or 0) * 100, 0)
+            be = round((ks - (ps or 0)), 2) if ks else None
+            return dict(type="Cash-Secured Put (bull)", legs=f"卖 {ks}P",
+                        exp=m["exp"], short_delta=ds, credit=ps, pop=pop,
+                        breakeven=be, collateral=collateral,
+                        note=f"单腿裸卖; 30Δ, 收满权利金, 需备现金 ≈ ${collateral:,.0f}/张, 跌破或被指派则接货")
+        kl = round(ks * 0.92, 0) if ks else None
         return dict(type="Put Credit Spread (bull)", legs=f"卖 {ks}P / 买 {kl}P",
                     exp=m["exp"], short_delta=ds, credit=ps, pop=pop,
                     note=f"看不跌就行; 30Δ 短腿, 净收权利金, 风险有限")
@@ -435,6 +444,7 @@ def run(args):
         if not m:
             print(f"  {tk}: 数据不足,跳过")
             continue
+        m["_csp"] = bool(getattr(args, "csp", False))   # 单腿裸卖 put 开关
         score, regime, structure, rationale = score_and_structure(m)
         clean = {k: v for k, v in m.items() if not k.startswith("_")}
         clean.update(score=score, regime=regime, structure=structure, rationale=rationale)
@@ -627,6 +637,8 @@ def main():
     p.add_argument("--out-dir", default=".")
     p.add_argument("--demo", action="store_true", help="用合成数据, 不联网, 预览用")
     p.add_argument("--open", action="store_true", help="跑完用默认浏览器打开 index.html")
+    p.add_argument("--csp", action="store_true",
+                   help="bullish 标的改出单腿裸卖 put (Cash-Secured Put) 而非看跌价差")
     run(p.parse_args())
 
 
