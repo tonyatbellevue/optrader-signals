@@ -28,7 +28,15 @@ import json
 import math
 import os
 import random
+import sys
 from datetime import datetime, timedelta
+
+# Windows 控制台默认 GBK,中文 print 会乱码;强制 stdout/stderr 用 UTF-8
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
 
 # 默认观察池 (流动性好、期权活跃; 故意与 wheel 篮子区分开)
 DEFAULT_UNIVERSE = [
@@ -64,7 +72,7 @@ def pct_rank(series, value):
 def load_iv_history(path):
     if os.path.exists(path):
         try:
-            with open(path, "r") as f:
+            with open(path, "r", encoding="utf-8") as f:
                 return json.load(f)
         except Exception:
             return {}
@@ -335,7 +343,7 @@ def run(args):
         scanned.append(clean)
 
     if not args.demo:
-        with open(iv_path, "w") as f:
+        with open(iv_path, "w", encoding="utf-8") as f:
             json.dump(iv_hist, f, indent=2)
 
     scanned.sort(key=lambda x: x["score"], reverse=True)
@@ -345,7 +353,7 @@ def run(args):
         generated_at=datetime.now().strftime("%Y-%m-%d %H:%M"),
         demo=bool(args.demo), picks=picks, universe=scanned,
     )
-    with open(os.path.join(args.out_dir, "signals.json"), "w") as f:
+    with open(os.path.join(args.out_dir, "signals.json"), "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
     html = HTML_SHELL.replace("/*__DATA__*/null", json.dumps(payload, ensure_ascii=False))
