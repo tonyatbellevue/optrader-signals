@@ -107,6 +107,41 @@ def pct_rank(series, value):
     return round(100.0 * below / len(series), 1)
 
 
+def prob_above(spot, level, dte, iv, r=RISK_FREE):
+    """风险中性下到期价 S_T > level 的概率 = N(d2)。iv 为小数(如 0.30)。"""
+    if not iv or iv <= 0 or dte <= 0 or spot <= 0 or level <= 0:
+        return None
+    T = dte / 365.0
+    d2 = (math.log(spot / level) + (r - 0.5 * iv ** 2) * T) / (iv * math.sqrt(T))
+    return norm_cdf(d2)
+
+
+def pop_for_structure(m, kind, breakevens):
+    """估算结构的盈利概率 PoP (0-100)。
+    breakevens: 看跌侧下盈亏平衡价 / 看涨侧上盈亏平衡价 (任一可为 None)。
+    模型化估计(风险中性 BS), 持有到期口径; 不含 tastytrade 50% 止盈带来的提升。
+    """
+    spot, dte, iv = m["spot"], m["dte"], (m["atm_iv"] or 0) / 100.0
+    lo, hi = breakevens                                  # (下破位, 上破位)
+    if kind == "put_credit":          # 盈利: S_T > 下破位
+        p = prob_above(spot, lo, dte, iv)
+    elif kind == "call_credit":       # 盈利: S_T < 上破位
+        pa = prob_above(spot, hi, dte, iv)
+        p = (1 - pa) if pa is not None else None
+    elif kind == "strangle":          # 盈利: 下破位 < S_T < 上破位
+        pl = prob_above(spot, lo, dte, iv)
+        ph = prob_above(spot, hi, dte, iv)
+        p = (pl - ph) if (pl is not None and ph is not None) else None
+    elif kind == "call_debit":        # 盈利: S_T > 上破位
+        p = prob_above(spot, hi, dte, iv)
+    elif kind == "put_debit":         # 盈利: S_T < 下破位
+        pa = prob_above(spot, lo, dte, iv)
+        p = (1 - pa) if pa is not None else None
+    else:
+        p = None
+    return round(p * 100, 1) if p is not None else None
+
+
 # ----------------------------- IV 历史存档 -----------------------------
 def load_iv_history(path):
     if os.path.exists(path):
@@ -300,6 +335,10 @@ def score_and_structure(m):
 
     # tastytrade 管理纪律: 盈利 50% 止盈 + 21 DTE 强制管理
     structure["manage"] = (f"盈利 {int(TT_PROFIT_TARGET*100)}% 平仓 / 到 {TT_MANAGE_DTE} DTE 强制管理")
+    pop = structure.get("pop")
+    if pop is not None:
+        rationale.append(
+            f"盈利概率 PoP ≈ {pop}% (BS 模型, 持有到期口径; tastytrade 50% 止盈通常会再抬高实际胜率)")
     rationale.append(
         f"管理: 盈利 {int(TT_PROFIT_TARGET*100)}% 止盈, {TT_MANAGE_DTE} DTE 前了结(tastytrade 机械化规则)")
     rationale.append(f"预期波动 ±{m['exp_move']}% / 流动性 OI {m['oi']:,} 量 {m['vol']:,}")
@@ -340,19 +379,24 @@ def pick_sell_structure(m):
     if trend == "bullish":
         ks, ds, ps = _pick_strike_by_delta(m, TT_SHORT_DELTA, call=False)
         kl = round(ks * 0.92, 0) if ks else None
+        pop = pop_for_structure(m, "put_credit", ((ks - (ps or 0)) if ks else None, None))
         return dict(type="Put Credit Spread (bull)", legs=f"卖 {ks}P / 买 {kl}P",
-                    exp=m["exp"], short_delta=ds, credit=ps,
+                    exp=m["exp"], short_delta=ds, credit=ps, pop=pop,
                     note=f"看不跌就行; 30Δ 短腿, 净收权利金, 风险有限")
     if trend == "bearish":
         ks, ds, ps = _pick_strike_by_delta(m, TT_SHORT_DELTA, call=True)
         kl = round(ks * 1.08, 0) if ks else None
+        pop = pop_for_structure(m, "call_credit", (None, (ks + (ps or 0)) if ks else None))
         return dict(type="Call Credit Spread (bear)", legs=f"卖 {ks}C / 买 {kl}C",
-                    exp=m["exp"], short_delta=ds, credit=ps,
+                    exp=m["exp"], short_delta=ds, credit=ps, pop=pop,
                     note=f"看不涨就行; 30Δ 短腿, 净收权利金, 风险有限")
     kp, dp, pp = _pick_strike_by_delta(m, TT_STRANGLE_DELTA, call=False)
     kc, dc, pc = _pick_strike_by_delta(m, TT_STRANGLE_DELTA, call=True)
+    total = round((pp or 0) + (pc or 0), 2)
+    pop = pop_for_structure(m, "strangle",
+                            ((kp - total) if kp else None, (kc + total) if kc else None))
     return dict(type="Short Strangle (neutral)", legs=f"卖 {kp}P + 卖 {kc}C",
-                exp=m["exp"], short_delta=f"±{TT_STRANGLE_DELTA}", credit=round((pp or 0) + (pc or 0), 2),
+                exp=m["exp"], short_delta=f"±{TT_STRANGLE_DELTA}", credit=total, pop=pop,
                 note="中性收两边权利金; 16Δ 宽跨, 高 IV 经典卖方结构, 注意双向风险")
 
 
@@ -361,13 +405,15 @@ def pick_buy_structure(m):
     if trend == "bearish":
         ks, ds, ps = _pick_strike_by_delta(m, 0.45, call=False)
         kl = round(ks * 0.90, 0) if ks else None
+        pop = pop_for_structure(m, "put_debit", ((ks - (ps or 0)) if ks else None, None))
         return dict(type="Put Debit Spread (bear)", legs=f"买 {ks}P / 卖 {kl}P",
-                    exp=m["exp"], long_delta=ds, debit=ps,
+                    exp=m["exp"], long_delta=ds, debit=ps, pop=pop,
                     note="顺势看跌; 付权利金, 风险=权利金")
     ks, ds, ps = _pick_strike_by_delta(m, 0.45, call=True)
     kl = round(ks * 1.10, 0) if ks else None
+    pop = pop_for_structure(m, "call_debit", (None, (ks + (ps or 0)) if ks else None))
     return dict(type="Call Debit Spread (bull)", legs=f"买 {ks}C / 卖 {kl}C",
-                exp=m["exp"], long_delta=ds, debit=ps,
+                exp=m["exp"], long_delta=ds, debit=ps, pop=pop,
                 note="顺势看涨; 付权利金, 风险=权利金")
 
 
@@ -529,7 +575,7 @@ document.getElementById('picks').innerHTML = DATA.picks.map(p=>{
   const s = p.structure;
   const legLabel = sell ? (s.credit!=null?`净收权利金 ≈ $${s.credit}`:'') : (s.debit!=null?`成本 ≈ $${s.debit}`:'');
   return `<div class="card ${sell?'sell':'buy'}">
-    <div class="score"><div class="n">${f(p.score)}</div><div class="l">EDGE</div></div>
+    <div class="score"><div class="n">${f(p.score)}</div><div class="l">EDGE</div>${s.pop!=null?`<div class="n" style="font-size:20px;margin-top:6px">${f(s.pop)}%</div><div class="l">PoP 赢面</div>`:''}</div>
     <div class="ctop">
       <div class="tk">${p.ticker}<small>$${f(p.spot)} · ${f(p.dte)}DTE · 到期 ${f(p.exp)}</small></div>
       <span class="badge ${sell?'sell':'buy'}">${sell?'卖方 · SELL PREMIUM':'买方 · BUY PREMIUM'}</span>
