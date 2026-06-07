@@ -29,6 +29,7 @@ import math
 import os
 import random
 import sys
+import webbrowser
 from datetime import datetime, timedelta
 
 # Windows 控制台默认 GBK,中文 print 会乱码;强制 stdout/stderr 用 UTF-8
@@ -357,11 +358,17 @@ def run(args):
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
     html = HTML_SHELL.replace("/*__DATA__*/null", json.dumps(payload, ensure_ascii=False))
-    with open(os.path.join(args.out_dir, "index.html"), "w", encoding="utf-8") as f:
+    html_path = os.path.join(args.out_dir, "index.html")
+    with open(html_path, "w", encoding="utf-8") as f:
         f.write(html)
 
     print(f"\n完成: {len(picks)} 个候选 -> index.html / signals.json"
           + ("  [DEMO 合成数据]" if args.demo else ""))
+
+    if getattr(args, "open", False):
+        url = "file://" + os.path.abspath(html_path).replace(os.sep, "/")
+        print(f"打开网页: {url}")
+        webbrowser.open(url)
 
 
 # ----------------------------- Web 仪表盘模板 -----------------------------
@@ -521,6 +528,7 @@ def main():
     p.add_argument("--top", type=int, default=3)
     p.add_argument("--out-dir", default=".")
     p.add_argument("--demo", action="store_true", help="用合成数据, 不联网, 预览用")
+    p.add_argument("--open", action="store_true", help="跑完用默认浏览器打开 index.html")
     run(p.parse_args())
 
 
