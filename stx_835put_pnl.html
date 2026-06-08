@@ -3,35 +3,39 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>STX Jun 26 2026 $835 PUT — 盈亏预测</title>
+<title>STX Jun 26 2026 $835 PUT — SELL PUT 盈亏</title>
 <style>
   body{margin:0;background:#0b0d10;color:#e6e3db;font-family:"Segoe UI",system-ui,sans-serif;padding:24px}
   .wrap{max-width:1100px;margin:0 auto}
   h1{font-size:22px;margin:0 0 4px}
+  .tag{display:inline-block;background:#d62728;color:#fff;font-size:12px;font-weight:600;padding:3px 10px;border-radius:4px;margin-left:8px}
   .sub{color:#8b8f98;font-size:13px;margin-bottom:18px}
   img{width:100%;height:auto;border:1px solid #23262d;border-radius:8px;background:#fff}
-  table{border-collapse:collapse;margin:18px 0;font-size:14px}
-  td,th{border:1px solid #23262d;padding:6px 12px;text-align:left}
+  table{border-collapse:collapse;margin:18px 0;font-size:14px;width:100%;max-width:560px}
+  td,th{border:1px solid #23262d;padding:7px 12px;text-align:left}
   th{color:#e0a030}
-  .warn{color:#e0a030;font-size:13px;line-height:1.6;margin-top:16px}
-  a{color:#5aa9e6}
+  .g{color:#2ca02c} .r{color:#ff6b6b}
+  .warn{color:#e0a030;font-size:13px;line-height:1.7;margin-top:16px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>STX &nbsp;Jun 26 2026 &nbsp;$835 PUT &nbsp;— 盈亏预测</h1>
-  <div class="sub">数据来源 yfinance(延迟报价) · 权利金用中价 $48.2 · IV 86% · 18 DTE · 非投资建议</div>
-  <img src="stx_835put_pnl.png" alt="STX 835 PUT P&L chart">
+  <h1>STX &nbsp;Jun 26 2026 &nbsp;$835 PUT<span class="tag">SELL PUT 卖方</span></h1>
+  <div class="sub">数据来源 yfinance(延迟报价) · 收权利金(中价) $48.2 · IV 86% · 18 DTE · 非投资建议</div>
+  <img src="stx_835put_pnl.png" alt="STX 835 PUT SELL PUT P&L chart">
   <table>
-    <tr><th>项</th><th>买方 Long Put</th><th>卖方 Short Put</th></tr>
-    <tr><td>权利金</td><td>付 $4,820/张</td><td>收 $4,820/张</td></tr>
-    <tr><td>盈亏平衡</td><td>$786.80</td><td>$786.80</td></tr>
-    <tr><td>最大盈利</td><td>$78,680(STX→0)</td><td>$4,820(STX≥835)</td></tr>
-    <tr><td>最大亏损</td><td>−$4,820(STX≥835)</td><td>巨大(STX→0)</td></tr>
+    <tr><th>卖方(Sell Put)</th><th>数值</th></tr>
+    <tr><td>收权利金</td><td class="g">+$4,820 / 张</td></tr>
+    <tr><td>盈亏平衡</td><td>$786.80(守住上方就赚)</td></tr>
+    <tr><td>最大盈利</td><td class="g">+$4,820(STX 到期 ≥ 835)</td></tr>
+    <tr><td>当前安全垫</td><td>现价 876.77,距行权 ≈ 5%</td></tr>
+    <tr><td>最大亏损</td><td class="r">巨大(跌破 786.80 起亏,STX→0 时 −$78,680)</td></tr>
+    <tr><td>占用保证金(CSP)</td><td>$83,500 / 张</td></tr>
   </table>
   <div class="warn">
-    ⚠ 现价 $876.77,行权 835 为价外(OTM),STX 需再跌约 5% 至 835 以下买方才有内在价值,跌破 $786.80 才盈利。<br>
-    ⚠ 该合约流动性极差(OI 3 / 量 4,买卖价差 $44.4↔$52),实盘滑点会明显侵蚀此理论损益。
+    ⚠ 卖方逻辑:IV 86% 偏高 → 权利金贵 → 利于卖。STX 只要不跌破 835(约 5% 缓冲)即全收权利金。<br>
+    ⚠ 下行敞口大:这是裸卖,跌破盈亏平衡后亏损随股价下跌放大。<br>
+    ⚠ 流动性极差(OI 3 / 量 4,买卖价差 $44.4↔$52),实盘滑点会明显侵蚀此理论损益。
   </div>
 </div>
 </body>
