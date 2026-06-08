@@ -34,6 +34,30 @@ def _ncdf(x):
     return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
 
+def prob_above(S, level, T, iv, r=RISK_FREE):
+    """风险中性下到期价 > level 的概率 = N(d2)。"""
+    if T <= 0 or iv <= 0 or S <= 0 or level <= 0:
+        return None
+    d2 = (math.log(S / level) + (r - 0.5 * iv * iv) * T) / (iv * math.sqrt(T))
+    return _ncdf(d2)
+
+
+def win_prob(pos, spot, T):
+    """该持仓当前的盈利概率 PoP(%): 到期落在盈利侧的概率。各结构通用。"""
+    K, iv = pos["strike"], pos["iv"]
+    prem, call, sell = pos["entry_premium"], (pos["type"] == "call"), (pos["side"] == "sell")
+    be = (K + prem) if call else (K - prem)        # 看涨上破位 / 看跌下破位
+    pa = prob_above(spot, be, T, iv)
+    if pa is None:
+        return None
+    # 卖put / 买call 盈利在上方; 卖call / 买put 盈利在下方
+    if (sell and not call) or (not sell and call):   # sell put 或 buy call -> 赢在上方
+        p = pa
+    else:                                            # sell call 或 buy put -> 赢在下方
+        p = 1 - pa
+    return round(p * 100, 1)
+
+
 def bs_price(S, K, T, iv, call, r=RISK_FREE):
     """Black-Scholes 期权价 (无股息)。"""
     if T <= 0 or iv <= 0:
@@ -74,8 +98,11 @@ def position_pnl(pos, days):
         labels.append(d.strftime("%m/%d"))
         closes.append(round(c, 2))
         pnls.append(round(pnl, 0))
+    T_now = max((exp - rows[-1][0].date()).days, 0) / 365.0
+    pop = win_prob(pos, closes[-1], T_now)
+    be = (K + entry_prem) if call else (K - entry_prem)
     summary = dict(last_pnl=pnls[-1], last_close=closes[-1],
-                   max=max(pnls), min=min(pnls))
+                   max=max(pnls), min=min(pnls), pop=pop, breakeven=round(be, 2))
     return labels, closes, pnls, summary
 
 
@@ -161,7 +188,8 @@ def main():
   <h2>{pos['ticker']} {pos.get('name','')} · {pos['strike']:.0f} {pos['type'].upper()} <span class="tag">{pos['side'].upper()}</span></h2>
   <div class="kv">到期 {pos['expiry']} · 建仓 {pos['entry_date']} @ 权利金 ${pos['entry_premium']} · {pos.get('contracts',1)} 张<br>
   最新({labels[-1]}): 标的 ${s['last_close']} · 浮动盈亏 <b class="{pnl_cls}">{s['last_pnl']:+,.0f}</b>
-  (区间 {s['min']:+,.0f} ~ {s['max']:+,.0f})</div>
+  (区间 {s['min']:+,.0f} ~ {s['max']:+,.0f})<br>
+  盈亏平衡 ${s['breakeven']} · <b>赢的机率 PoP ≈ {s['pop']}%</b>(到期落在盈利侧, BS 估算)</div>
   <img src="{img}" alt="{pos['id']} pnl">
   <table style="border-collapse:collapse;margin-top:12px;font-size:13px">
     <tr><th style="border:1px solid #23262d;padding:5px 12px;color:#e0a030">日期</th>
