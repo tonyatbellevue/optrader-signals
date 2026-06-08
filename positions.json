@@ -13,6 +13,32 @@
       "entry_premium": 42.11,
       "iv": 0.8619,
       "contracts": 1
+    },
+    {
+      "id": "GOOGL-345P-jul17",
+      "ticker": "GOOGL",
+      "name": "谷歌",
+      "type": "put",
+      "side": "sell",
+      "strike": 345.0,
+      "expiry": "2026-07-17",
+      "entry_date": "2026-06-01",
+      "entry_premium": 4.50,
+      "iv": 0.3128,
+      "contracts": 1
+    },
+    {
+      "id": "AAPL-295P-jul10",
+      "ticker": "AAPL",
+      "name": "苹果",
+      "type": "put",
+      "side": "sell",
+      "strike": 295.0,
+      "expiry": "2026-07-10",
+      "entry_date": "2026-06-01",
+      "entry_premium": 4.70,
+      "iv": 0.2500,
+      "contracts": 1
     }
   ]
 }
