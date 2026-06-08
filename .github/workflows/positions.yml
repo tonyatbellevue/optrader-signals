@@ -1,0 +1,36 @@
+name: positions-pnl
+
+# 持仓盈亏追踪 —— 独立于 daily-signals, 互不影响。
+# 每个交易日收盘后跑一次: 21:30 UTC = 17:30 EDT / 16:30 EST(均在 16:00 ET 收盘之后)。
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+# 与 daily-signals 用不同的并发组, 各跑各的
+concurrency:
+  group: positions-pnl
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install deps
+        run: pip install -r requirements.txt matplotlib==3.10.8
+      - name: Update positions P&L
+        run: python plot_position.py
+      - name: Commit positions page
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add positions.html position_*.png
+          git commit -m "positions: $(date -u +%Y-%m-%d)" || echo "no changes"
+          git push
