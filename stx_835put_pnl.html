@@ -45,6 +45,20 @@
     <tr><td>最大亏损</td><td class="r">巨大(跌破 786.80 起亏,STX→0 时 −$78,680)</td></tr>
     <tr><td>占用保证金(CSP)</td><td>$83,500 / 张</td></tr>
   </table>
+  <h2 style="font-size:17px;color:#e0a030;margin-top:28px">过去 5 个交易日盈亏(若 5 天前卖出)</h2>
+  <div class="sub">注:yfinance 无历史期权价,此为 <b>BS 模型重算</b>(IV 固定按 86% 代理),非真实成交盈亏</div>
+  <img src="stx_835put_5d.png" alt="STX 835 PUT past 5-day P&L">
+  <table>
+    <tr><th>日期</th><th>STX 收盘</th><th>卖方 P&L(对比卖出日)</th></tr>
+    <tr><td>06/01(卖出)</td><td>$921.26</td><td>$0</td></tr>
+    <tr><td>06/02</td><td>$926.61</td><td class="g">+$289</td></tr>
+    <tr><td>06/03</td><td>$940.69</td><td class="g">+$798</td></tr>
+    <tr><td>06/04</td><td>$925.99</td><td class="g">+$555</td></tr>
+    <tr><td>06/05</td><td>$847.47</td><td class="r">−$1,999</td></tr>
+    <tr><td>06/08</td><td>$876.77</td><td class="r">−$356</td></tr>
+  </table>
+  <div class="sub">解读:STX 前几天涨,卖方浮盈;6/05 大跌到 847(逼近 835)一度浮亏近 $2,000;6/08 反弹到 877,浮亏收窄到 −$356。<b>说明卖方最怕快速下跌</b>。</div>
+
   <div class="warn">
     ⚠ 卖方逻辑:IV 86% 偏高 → 权利金贵 → 利于卖。STX 只要不跌破 835(约 5% 缓冲)即全收权利金。<br>
     ⚠ 下行敞口大:这是裸卖,跌破盈亏平衡后亏损随股价下跌放大。<br>
