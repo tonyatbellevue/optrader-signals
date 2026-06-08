@@ -1,0 +1,29 @@
+<!doctype html><html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>持仓盈亏追踪</title><style>
+body{margin:0;background:#0b0d10;color:#e6e3db;font-family:"Segoe UI",system-ui,sans-serif;padding:24px}
+.wrap{max-width:1000px;margin:0 auto}h1{font-size:22px;margin:0 0 4px}
+.sub{color:#8b8f98;font-size:13px;margin-bottom:20px}
+.card{background:#12151a;border:1px solid #23262d;border-radius:10px;padding:18px;margin:18px 0}
+.card h2{font-size:16px;margin:0 0 8px}
+img{width:100%;height:auto;border-radius:8px;background:#fff}
+.kv{font-size:14px;margin:10px 0;line-height:1.8}.g{color:#2ca02c}.r{color:#ff6b6b}
+.tag{display:inline-block;background:#d62728;color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;margin-left:6px}
+.warn{color:#e0a030;font-size:12.5px;line-height:1.7;margin-top:8px}
+</style></head><body><div class="wrap">
+<h1>持仓盈亏追踪</h1>
+<div class="sub">独立于每日荐股 · 数据 yfinance(延迟) · 盈亏为 BS 模型重算(IV 代理),非真实成交价 · 非投资建议<br>更新: 2026-06-08 21:22 UTC</div>
+<div class="card">
+  <h2>STX Seagate · 835 PUT <span class="tag">SELL</span></h2>
+  <div class="kv">到期 2026-06-26 · 建仓 2026-06-01 @ 权利金 $42.11 · 1 张<br>
+  最新(06/08): 标的 $876.77 · 浮动盈亏 <b class="r">-356</b>
+  (区间 -1,999 ~ +798)</div>
+  <img src="position_STX-835P-jun26.png" alt="STX-835P-jun26 pnl">
+  <table style="border-collapse:collapse;margin-top:12px;font-size:13px">
+    <tr><th style="border:1px solid #23262d;padding:5px 12px;color:#e0a030">日期</th>
+        <th style="border:1px solid #23262d;padding:5px 12px;color:#e0a030">标的</th>
+        <th style="border:1px solid #23262d;padding:5px 12px;color:#e0a030">P&L</th></tr>
+    <tr><td style="border:1px solid #23262d;padding:5px 12px">06/01</td><td style="border:1px solid #23262d;padding:5px 12px">$921.26</td><td class='g'>+0</td></tr><tr><td style="border:1px solid #23262d;padding:5px 12px">06/02</td><td style="border:1px solid #23262d;padding:5px 12px">$926.61</td><td class='g'>+289</td></tr><tr><td style="border:1px solid #23262d;padding:5px 12px">06/03</td><td style="border:1px solid #23262d;padding:5px 12px">$940.69</td><td class='g'>+798</td></tr><tr><td style="border:1px solid #23262d;padding:5px 12px">06/04</td><td style="border:1px solid #23262d;padding:5px 12px">$925.99</td><td class='g'>+555</td></tr><tr><td style="border:1px solid #23262d;padding:5px 12px">06/05</td><td style="border:1px solid #23262d;padding:5px 12px">$847.47</td><td class='r'>-1,999</td></tr><tr><td style="border:1px solid #23262d;padding:5px 12px">06/08</td><td style="border:1px solid #23262d;padding:5px 12px">$876.77</td><td class='r'>-356</td></tr>
+  </table>
+  <div class="warn">⚠ mark-to-model:用真实日线 + BS 重算(IV 固定 86% 代理),非真实期权成交价。</div>
+</div></div></body></html>

@@ -1,0 +1,18 @@
+{
+  "_note": "手动维护的持仓清单; plot_position.py 据此每日重算滚动盈亏。独立于每日荐股流程。",
+  "positions": [
+    {
+      "id": "STX-835P-jun26",
+      "ticker": "STX",
+      "name": "Seagate",
+      "type": "put",
+      "side": "sell",
+      "strike": 835.0,
+      "expiry": "2026-06-26",
+      "entry_date": "2026-06-01",
+      "entry_premium": 42.11,
+      "iv": 0.8619,
+      "contracts": 1
+    }
+  ]
+}
