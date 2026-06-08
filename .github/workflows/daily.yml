@@ -1,10 +1,11 @@
 name: daily-signals
 
-# 每个美股交易日开市后 30 分钟跑 = 10:00 ET = 22:00 SGT
-# GitHub cron 是固定 UTC、不随 DST 变, 所以挂两个时间, 再用时区门控只放行真正的 10:00 ET:
-#   14:00 UTC -> 夏令时(EDT)= 10:00 ET ✅ / 冬令时(EST)= 09:00 ET ✗ 跳过
-#   15:00 UTC -> 夏令时(EDT)= 11:00 ET ✗ 跳过 / 冬令时(EST)= 10:00 ET ✅
-# 手动 workflow_dispatch 不受门控限制, 永远执行。
+# 目标: 每个美股交易日开市后(约 10:00 ET = 22:00 SGT)跑一次。
+# 现实: GitHub 免费定时(schedule)经常延迟数小时, 且固定 UTC 不随 DST 变。
+# 方案: 挂两个早一点的 UTC 时间 + 一个"宽窗口 + 当天去重"门控:
+#   - 只要美东当前在盘中 09~15 点之间(容忍 GHA 数小时延迟)就放行;
+#   - 但若今天已经生成过 signals(git log 里有 "signals: <今天UTC>"), 则跳过, 保证一天只跑一次;
+#   - 手动 workflow_dispatch 不受门控限制, 永远执行。
 on:
   schedule:
     - cron: "0 14 * * 1-5"
@@ -15,24 +16,27 @@ permissions:
   contents: write              # 允许把生成结果 commit 回仓库
 
 jobs:
-  # 门控: 仅当美东当前为 10 点(开市后 30min)时放行; 手动触发永远放行
   gate:
     runs-on: ubuntu-latest
     outputs:
       run: ${{ steps.check.outputs.run }}
     steps:
+      - uses: actions/checkout@v4
       - id: check
         run: |
           if [ "${{ github.event_name }}" != "schedule" ]; then
-            echo "手动触发, 放行"; echo "run=true" >> "$GITHUB_OUTPUT"
+            echo "手动触发, 放行"; echo "run=true" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          ET_HOUR=$((10#$(TZ=America/New_York date +%H)))   # 强制十进制, 避免 08/09 被当八进制
+          TODAY=$(date -u +%Y-%m-%d)
+          echo "美东当前小时 = $ET_HOUR, 今天(UTC) = $TODAY"
+          if [ "$ET_HOUR" -lt 9 ] || [ "$ET_HOUR" -gt 15 ]; then
+            echo "不在盘中 09~15 ET 窗口, 跳过"; echo "run=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          if git log -5 --format='%s' | grep -q "signals: $TODAY"; then
+            echo "今天已生成过 signals, 去重跳过"; echo "run=false" >> "$GITHUB_OUTPUT"
           else
-            ET_HOUR=$(TZ=America/New_York date +%H)
-            echo "美东当前小时 = $ET_HOUR"
-            if [ "$ET_HOUR" = "10" ]; then
-              echo "= 10:00 ET, 放行"; echo "run=true" >> "$GITHUB_OUTPUT"
-            else
-              echo "非 10:00 ET, 跳过(DST 门控)"; echo "run=false" >> "$GITHUB_OUTPUT"
-            fi
+            echo "在窗口内且今天还没跑, 放行"; echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
   build:
