@@ -69,6 +69,23 @@ def bs_price(S, K, T, iv, call, r=RISK_FREE):
     return K * math.exp(-r * T) * _ncdf(-d2) - S * _ncdf(-d1)
 
 
+def next_earnings(tk, exp):
+    """返回 (earnings_date_str|None, before_expiry_bool)。"""
+    import pandas as pd
+    try:
+        cal = tk.calendar
+        ed = None
+        if isinstance(cal, dict):
+            v = cal.get("Earnings Date")
+            ed = (v[0] if isinstance(v, (list, tuple)) and v else v)
+        if ed is None:
+            return None, False
+        ed = pd.to_datetime(ed).date()
+        return ed.isoformat(), (ed <= exp)
+    except Exception:
+        return None, False
+
+
 def position_pnl(pos, days):
     """返回 (labels, closes, pnls, summary)。pnl 为该持仓每日相对建仓的盈亏($)。"""
     import yfinance as yf
@@ -101,8 +118,10 @@ def position_pnl(pos, days):
     T_now = max((exp - rows[-1][0].date()).days, 0) / 365.0
     pop = win_prob(pos, closes[-1], T_now)
     be = (K + entry_prem) if call else (K - entry_prem)
+    ed, before = next_earnings(tk, exp)
     summary = dict(last_pnl=pnls[-1], last_close=closes[-1],
-                   max=max(pnls), min=min(pnls), pop=pop, breakeven=round(be, 2))
+                   max=max(pnls), min=min(pnls), pop=pop, breakeven=round(be, 2),
+                   earnings=ed, earnings_before_exp=before)
     return labels, closes, pnls, summary
 
 
@@ -189,7 +208,8 @@ def main():
   <div class="kv">到期 {pos['expiry']} · 建仓 {pos['entry_date']} @ 权利金 ${pos['entry_premium']} · {pos.get('contracts',1)} 张<br>
   最新({labels[-1]}): 标的 ${s['last_close']} · 浮动盈亏 <b class="{pnl_cls}">{s['last_pnl']:+,.0f}</b>
   (区间 {s['min']:+,.0f} ~ {s['max']:+,.0f})<br>
-  盈亏平衡 ${s['breakeven']} · <b>赢的机率 PoP ≈ {s['pop']}%</b>(到期落在盈利侧, BS 估算)</div>
+  盈亏平衡 ${s['breakeven']} · <b>赢的机率 PoP ≈ {s['pop']}%</b>(到期落在盈利侧, BS 估算)<br>
+  {('下次财报 ' + s['earnings'] + (' ⚠ 在到期前(IV crush/跳空风险)' if s['earnings_before_exp'] else ' ✅ 在到期后')) if s.get('earnings') else '下次财报: 查不到, 请手动核对'}</div>
   <img src="{img}" alt="{pos['id']} pnl">
   <table style="border-collapse:collapse;margin-top:12px;font-size:13px">
     <tr><th style="border:1px solid #23262d;padding:5px 12px;color:#e0a030">日期</th>
