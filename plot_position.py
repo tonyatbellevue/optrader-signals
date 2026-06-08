@@ -158,6 +158,62 @@ def make_chart(pos, labels, closes, pnls, out_dir):
     return fname
 
 
+def make_payoff_chart(pos, spot, out_dir):
+    """到期损益示意图(4 种结构通用): 到期 P&L 曲线 + 当前 BS 曲线 + 关键价位。"""
+    import numpy as np
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from datetime import datetime
+
+    K, iv, prem = pos["strike"], pos["iv"], pos["entry_premium"]
+    call, sell = (pos["type"] == "call"), (pos["side"] == "sell")
+    n = pos.get("contracts", 1) * 100
+    exp = datetime.strptime(pos["expiry"], "%Y-%m-%d").date()
+    T = max((exp - date.today()).days, 0) / 365.0
+
+    def intrinsic(S):
+        return max(S - K, 0) if call else max(K - S, 0)
+
+    def pnl_exp(S):
+        v = intrinsic(S)
+        return (prem - v) * n if sell else (v - prem) * n
+
+    def pnl_now(S):
+        v = bs_price(S, K, T, iv, call)
+        return (prem - v) * n if sell else (v - prem) * n
+
+    lo, hi = min(K, spot) * 0.82, max(K, spot) * 1.18
+    S = np.linspace(lo, hi, 400)
+    pe = np.array([pnl_exp(s) for s in S])
+    pn = np.array([pnl_now(s) for s in S])
+    be = (K + prem) if call else (K - prem)
+
+    plt.rcParams["axes.unicode_minus"] = False
+    fig, ax = plt.subplots(figsize=(9, 4.6))
+    ax.axhline(0, color="#888", lw=1)
+    ax.fill_between(S, pe, 0, where=(pe >= 0), color="#2ca02c", alpha=.12)
+    ax.fill_between(S, pe, 0, where=(pe < 0), color="#d62728", alpha=.12)
+    ax.plot(S, pe, color="#d62728" if sell else "#1f77b4", lw=2.6,
+            label="P&L @ expiry")
+    ax.plot(S, pn, color="#d62728" if sell else "#1f77b4", lw=1.4, ls="--", alpha=.6,
+            label="P&L now (BS)")
+    ax.axvline(spot, color="#2ca02c", lw=1.2, ls=":", label=f"Spot {spot:.2f}")
+    ax.axvline(K, color="#9467bd", lw=1.1, ls=":", label=f"Strike {K:.0f}")
+    ax.axvline(be, color="#ff7f0e", lw=1.1, ls=":", label=f"Breakeven {be:.2f}")
+    side = pos["side"].upper()
+    ax.set_title(f"{pos['ticker']} {K:.0f}{pos['type'][0].upper()} {side} {pos['expiry']} - payoff",
+                 fontsize=10.5, weight="bold")
+    ax.set_xlabel(f"{pos['ticker']} price at expiration ($)")
+    ax.set_ylabel("P&L /pos ($)")
+    ax.grid(alpha=.25); ax.legend(fontsize=8, loc="best")
+    plt.tight_layout()
+    fname = f"payoff_{pos['id']}.png"
+    plt.savefig(os.path.join(out_dir, fname), dpi=125)
+    plt.close(fig)
+    return fname
+
+
 PAGE_HEAD = """<!doctype html><html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>持仓盈亏追踪</title><style>
@@ -199,6 +255,7 @@ def main():
             print(f"  {pos['id']}: 无数据,跳过"); continue
         labels, closes, pnls, s = res
         img = make_chart(pos, labels, closes, pnls, args.out_dir)
+        payoff = make_payoff_chart(pos, s["last_close"], args.out_dir)
         pnl_cls = "g" if s["last_pnl"] >= 0 else "r"
         rows = "".join(
             f"<tr><td>{l}</td><td>${c}</td><td class='{'g' if v>=0 else 'r'}'>{v:+,.0f}</td></tr>"
@@ -210,6 +267,9 @@ def main():
   (区间 {s['min']:+,.0f} ~ {s['max']:+,.0f})<br>
   盈亏平衡 ${s['breakeven']} · <b>赢的机率 PoP ≈ {s['pop']}%</b>(到期落在盈利侧, BS 估算)<br>
   {('下次财报 ' + s['earnings'] + (' ⚠ 在到期前(IV crush/跳空风险)' if s['earnings_before_exp'] else ' ✅ 在到期后')) if s.get('earnings') else '下次财报: 查不到, 请手动核对'}</div>
+  <div style="font-size:12px;color:#8b8f98;margin:8px 0 2px">到期损益示意图</div>
+  <img src="{payoff}" alt="{pos['id']} payoff">
+  <div style="font-size:12px;color:#8b8f98;margin:12px 0 2px">过去 {len(labels)-1} 个交易日滚动盈亏</div>
   <img src="{img}" alt="{pos['id']} pnl">
   <table style="border-collapse:collapse;margin-top:12px;font-size:13px">
     <tr><th style="border:1px solid #23262d;padding:5px 12px;color:#e0a030">日期</th>
