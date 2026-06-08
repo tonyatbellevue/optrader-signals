@@ -214,6 +214,61 @@ def make_payoff_chart(pos, spot, out_dir):
     return fname
 
 
+def make_forecast_chart(pos, spot, out_dir):
+    """股价预测图(单独): 用 IV 做 GBM 蒙特卡洛模拟, 画概率锥 + 样本路径 + 关键价位。
+    注意: 这是当前 IV 隐含的统计分布(对数正态随机游走), 不是方向性预测。"""
+    import numpy as np
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from datetime import datetime
+
+    K, iv, prem = pos["strike"], pos["iv"], pos["entry_premium"]
+    call, sell = (pos["type"] == "call"), (pos["side"] == "sell")
+    be = (K + prem) if call else (K - prem)
+    exp = datetime.strptime(pos["expiry"], "%Y-%m-%d").date()
+    ndays = max((exp - date.today()).days, 1)
+    r = RISK_FREE
+
+    np.random.seed(abs(hash(pos["id"])) % (2**32))   # 每个持仓稳定可复现
+    steps = ndays
+    dt = 1 / 365.0
+    npaths = 300
+    drift = (r - 0.5 * iv * iv) * dt
+    shock = iv * math.sqrt(dt)
+    incr = drift + shock * np.random.standard_normal((npaths, steps))
+    paths = spot * np.exp(np.cumsum(incr, axis=1))
+    paths = np.hstack([np.full((npaths, 1), spot), paths])
+    xs = np.arange(steps + 1)
+
+    # 用模拟路径取分位带
+    p05 = np.percentile(paths, 5, axis=0)
+    p50 = np.percentile(paths, 50, axis=0)
+    p95 = np.percentile(paths, 95, axis=0)
+
+    plt.rcParams["axes.unicode_minus"] = False
+    fig, ax = plt.subplots(figsize=(9, 4.6))
+    for i in range(0, npaths, 6):                    # 画约 50 条样本路径
+        ax.plot(xs, paths[i], color="#1f77b4", lw=.4, alpha=.12)
+    ax.fill_between(xs, p05, p95, color="#1f77b4", alpha=.15, label="5-95% range")
+    ax.plot(xs, p50, color="#1f77b4", lw=2, label="median path")
+    ax.axhline(spot, color="#2ca02c", lw=1.2, ls=":", label=f"Spot {spot:.2f}")
+    ax.axhline(K, color="#9467bd", lw=1.1, ls=":", label=f"Strike {K:.0f}")
+    ax.axhline(be, color="#ff7f0e", lw=1.1, ls=":", label=f"Breakeven {be:.2f}")
+    # 到期概率标注
+    p_below_K = float((paths[:, -1] < K).mean()) * 100
+    ax.set_title(f"{pos['ticker']} price forecast cone to {pos['expiry']} "
+                 f"(Monte-Carlo, IV {iv*100:.0f}%, {ndays}d)  |  P(expire < {K:.0f}) = {p_below_K:.0f}%",
+                 fontsize=10, weight="bold")
+    ax.set_xlabel("calendar days to expiry"); ax.set_ylabel(f"{pos['ticker']} ($)")
+    ax.grid(alpha=.25); ax.legend(fontsize=8, loc="best")
+    plt.tight_layout()
+    fname = f"forecast_{pos['id']}.png"
+    plt.savefig(os.path.join(out_dir, fname), dpi=125)
+    plt.close(fig)
+    return fname
+
+
 PAGE_HEAD = """<!doctype html><html lang="zh"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>持仓盈亏追踪</title><style>
@@ -256,6 +311,7 @@ def main():
         labels, closes, pnls, s = res
         img = make_chart(pos, labels, closes, pnls, args.out_dir)
         payoff = make_payoff_chart(pos, s["last_close"], args.out_dir)
+        forecast = make_forecast_chart(pos, s["last_close"], args.out_dir)
         pnl_cls = "g" if s["last_pnl"] >= 0 else "r"
         rows = "".join(
             f"<tr><td>{l}</td><td>${c}</td><td class='{'g' if v>=0 else 'r'}'>{v:+,.0f}</td></tr>"
@@ -271,6 +327,8 @@ def main():
   <img src="{payoff}" alt="{pos['id']} payoff">
   <div style="font-size:12px;color:#8b8f98;margin:12px 0 2px">过去 {len(labels)-1} 个交易日滚动盈亏</div>
   <img src="{img}" alt="{pos['id']} pnl">
+  <div style="font-size:12px;color:#8b8f98;margin:12px 0 2px">股价预测图(蒙特卡洛, IV 隐含分布; 非方向预测)</div>
+  <img src="{forecast}" alt="{pos['id']} forecast">
   <table style="border-collapse:collapse;margin-top:12px;font-size:13px">
     <tr><th style="border:1px solid #23262d;padding:5px 12px;color:#e0a030">日期</th>
         <th style="border:1px solid #23262d;padding:5px 12px;color:#e0a030">标的</th>
