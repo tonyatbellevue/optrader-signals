@@ -16,12 +16,25 @@
   th{color:#e0a030}
   .g{color:#2ca02c} .r{color:#ff6b6b}
   .warn{color:#e0a030;font-size:13px;line-height:1.7;margin-top:16px}
+  .plain{background:#12151a;border:1px solid #23262d;border-left:4px solid #2ca02c;
+    border-radius:8px;padding:16px 20px;margin:18px 0;font-size:14.5px;line-height:1.8}
+  .plain h2{font-size:16px;margin:0 0 10px;color:#e0a030}
+  .plain b{color:#fff}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>STX &nbsp;Jun 26 2026 &nbsp;$835 PUT<span class="tag">SELL PUT 卖方</span></h1>
   <div class="sub">数据来源 yfinance(延迟报价) · 收权利金(中价) $48.2 · IV 86% · 18 DTE · 非投资建议</div>
+
+  <div class="plain">
+    <h2>一句话看懂(大白话)</h2>
+    你现在收 <b>$4,820</b>,跟对方打个赌:<b>赌 STX 在 6/26 之前不会跌到 $835 以下</b>。<br><br>
+    • <b>赌赢(STX 守在 835 上方)</b> → 这 $4,820 全归你,这就是最大赚头。现价 876,还有约 <b>5% 的下跌空间</b>当缓冲。<br>
+    • <b>赌输(STX 跌破 835)</b> → 你得按 $835 把 100 股买下来(每张要先压 <b>$8.35 万</b>现金)。跌到 <b>$786.8</b> 以前,收的权利金还能抵掉亏损;<b>再往下跌,亏得越来越多,股价归零最惨亏 $7.8 万</b>。<br><br>
+    简单说:<b>大概率赚一笔小钱,小概率亏一笔大钱</b>——典型的卖保险逻辑。所以只在「保费贵(IV 高)+ 自己愿意按 835 接货」时才值得做。
+  </div>
+
   <img src="stx_835put_pnl.png" alt="STX 835 PUT SELL PUT P&L chart">
   <table>
     <tr><th>卖方(Sell Put)</th><th>数值</th></tr>
